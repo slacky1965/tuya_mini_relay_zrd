@@ -1,0 +1,2 @@
+# tuya_mini_relay_zrd
+tuya_mini_relay_zrd
