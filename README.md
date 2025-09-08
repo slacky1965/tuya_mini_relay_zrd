@@ -1,2 +1,11 @@
 # tuya_mini_relay_zrd
-tuya_mini_relay_zrd
+
+---
+
+	_TZ3000_kqvb5akv
+	
+---
+
+<img src="doc/images/mini_relay.jpg"/>
+
+---
