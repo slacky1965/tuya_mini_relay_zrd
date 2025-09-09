@@ -179,62 +179,40 @@ static void app_zclWriteReqCmd(uint16_t clusterId, zclWriteCmd_t *pWriteReqCmd)
 {
 
     uint8_t numAttr = pWriteReqCmd->numAttr;
-//    zclWriteRec_t *attr = pWriteReqCmd->attrList;
-
+    zclWriteRec_t *attr = pWriteReqCmd->attrList;
+    bool save = false;
 
 //    printf("app_zclWriteReqCmd\r\n");
 
-    if (clusterId == ZCL_CLUSTER_HAVC_THERMOSTAT) {
+    if (clusterId == ZCL_CLUSTER_GEN_ON_OFF) {
         for (uint32_t i = 0; i < numAttr; i++) {
-//            if (attr[i].attrID == ZCL_ATTRID_HVAC_THERMOSTAT_SYS_MODE) {
-//                uint8_t sys_mode = attr[i].attrData[0];
-//                if (sys_mode == SYS_MODE_OFF || sys_mode == SYS_MODE_HEAT) {
-//                    printf("sys_mode: %d\r\n", sys_mode);
-//                    set_remote_sysmode(sys_mode);
-//                }
-//            } else if (attr[i].attrID == ZCL_ATTRID_HVAC_THERMOSTAT_OCCUPIED_HEATING_SETPOINT) {
-//                int16_t temp = BUILD_S16(attr[i].attrData[0], attr[i].attrData[1]);
-//                printf("heat_setpoint: %d\r\n", temp);
-//                set_remote_occ_setpoint(temp);
-//            } else if(attr[i].attrID == ZCL_ATTRID_HVAC_THERMOSTAT_LOCAL_TEMP_CALIBRATION) {
-//                int8_t temp = (int8_t)attr[i].attrData[0];
-////                printf("calibration: %d\r\n", temp);
-//                set_remote_calibration(temp);
-//            } else if(attr[i].attrID == ZCL_ATTRID_HVAC_THERMOSTAT_CUSTOM_SENSOR_USED) {
-//                uint8_t sensor_used = attr[i].attrData[0];
-//                printf("sensor_used: %d\r\n", sensor_used);
-//                set_remote_sensor_used(sensor_used);
-//            } else if(attr[i].attrID == ZCL_ATTRID_HVAC_THERMOSTAT_MIN_SETPOINT_DEAD_BAND) {
-//                uint8_t dead_band = attr[i].attrData[0];
-//                printf("dead_band: %d\r\n", dead_band);
-//                set_remote_dead_band(dead_band);
-//            } else if(attr[i].attrID == ZCL_ATTRID_HVAC_THERMOSTAT_MIN_HEAT_SETPOINT_LIMIT) {
-//                int16_t min_temp = BUILD_S16(attr[i].attrData[0], attr[i].attrData[1]);
-//                printf("min_temp: %d\r\n", min_temp);
-//                set_remote_min_limit(min_temp);
-//            } else if(attr[i].attrID == ZCL_ATTRID_HVAC_THERMOSTAT_MAX_HEAT_SETPOINT_LIMIT) {
-//                int16_t max_temp = BUILD_S16(attr[i].attrData[0], attr[i].attrData[1]);
-//                printf("max_temp: %d\r\n", max_temp);
-//                set_remote_max_limit(max_temp);
-//            } else if(attr[i].attrID == ZCL_ATTRID_HVAC_THERMOSTAT_PROGRAMMING_OPERATION_MODE) {
-//                uint8_t oper_mode = attr[i].attrData[0];
-//                printf("oper_mode: %d\r\n", oper_mode);
-//                set_remote_oper_mode(oper_mode);
-//            }
+            if (attr[i].attrID == ZCL_ATTRID_START_UP_ONOFF) {
+                uint8_t startup = attr[i].attrData[0];
+                printf("startup: 0x%02x\r\n", startup);
+                config->startUpOnOff = startup;
+                save = true;
+            }
         }
-    } else if (clusterId == ZCL_CLUSTER_HAVC_USER_INTERFACE_CONFIG) {
+    } else if (clusterId == ZCL_CLUSTER_GEN_ON_OFF_SWITCH_CONFIG) {
         for (uint32_t i = 0; i < numAttr; i++) {
-//            if (attr[i].attrID == ZCL_ATTRID_HVAC_TEMPERATURE_DISPLAY_MODE) {
-////                uint8_t display_mode = attr[i].attrData[0];
-////                remote_cmd_display_mode(display_mode);
-//            } else if (attr[i].attrID == ZCL_ATTRID_HVAC_KEYPAD_LOCKOUT) {
-//                uint8_t keylock = attr[i].attrData[0];
-//                printf("keylock: %d\r\n", keylock);
-//                set_remote_keylock(keylock);
-//            }
+            if (attr[i].attrID == CUSTOM_ATTRID_SWITCH_TYPE) {
+                uint8_t type = attr[i].attrData[0];
+                printf("type: 0x%02x\r\n", type);
+                config->switchType = type;
+                zcl_onOffCfgAttr_t *pOnOffCfg = zcl_onOffCfgAttrsGet();
+                pOnOffCfg->switchType = type;
+                save = true;
+            } else if (attr[i].attrID == ZCL_ATTRID_SWITCH_ACTION) {
+                uint8_t action = attr[i].attrData[0];
+                printf("action: 0x%02x\r\n", action);
+                config->switchActions = action;
+                save = true;
+            }
         }
-
     }
+
+    config_save();
+
 #ifdef ZCL_POLL_CTRL
     if(clusterId == ZCL_CLUSTER_GEN_POLL_CONTROL){
         for(int32_t i = 0; i < numAttr; i++){
