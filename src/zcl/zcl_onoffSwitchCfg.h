@@ -8,8 +8,8 @@
 #define ZCL_SWITCH_TYPE_MOMENTARY           0x01
 #define ZCL_SWITCH_TYPE_MULTIFUNCTION       0x02
 
-#define ZCL_SWITCH_ACTION_ON                0x00
-#define ZCL_SWITCH_ACTION_OFF               0x01
+#define ZCL_SWITCH_ACTION_ON_OFF            0x00
+#define ZCL_SWITCH_ACTION_OFF_ON            0x01
 #define ZCL_SWITCH_ACTION_TOGGLE            0x02
 
 #define CUSTOM_ATTRID_SWITCH_TYPE           0xF000
