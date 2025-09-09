@@ -227,13 +227,13 @@ zcl_onOffAttr_t g_zcl_onOffAttrs = {
 };
 
 const zclAttrInfo_t onOff_attrTbl[] = {
-    { ZCL_ATTRID_ONOFF,                     ZCL_BOOLEAN,    RR, (uint8_t*)&g_zcl_onOffAttrs.onOff},
-    { ZCL_ATTRID_GLOBAL_SCENE_CONTROL,      ZCL_BOOLEAN,    R,  (uint8_t*)&g_zcl_onOffAttrs.globalSceneControl},
-    { ZCL_ATTRID_ON_TIME,                   ZCL_UINT16,     RW, (uint8_t*)&g_zcl_onOffAttrs.onTime},
-    { ZCL_ATTRID_OFF_WAIT_TIME,             ZCL_UINT16,     RW, (uint8_t*)&g_zcl_onOffAttrs.offWaitTime},
-    { ZCL_ATTRID_START_UP_ONOFF,            ZCL_ENUM8,      RW, (uint8_t*)&g_zcl_onOffAttrs.startUpOnOff},
+    { ZCL_ATTRID_ONOFF,                     ZCL_BOOLEAN,    RR,     (uint8_t*)&g_zcl_onOffAttrs.onOff               },
+    { ZCL_ATTRID_GLOBAL_SCENE_CONTROL,      ZCL_BOOLEAN,    R,      (uint8_t*)&g_zcl_onOffAttrs.globalSceneControl  },
+    { ZCL_ATTRID_ON_TIME,                   ZCL_UINT16,     RW,     (uint8_t*)&g_zcl_onOffAttrs.onTime              },
+    { ZCL_ATTRID_OFF_WAIT_TIME,             ZCL_UINT16,     RW,     (uint8_t*)&g_zcl_onOffAttrs.offWaitTime         },
+    { ZCL_ATTRID_START_UP_ONOFF,            ZCL_ENUM8,      RWR,    (uint8_t*)&g_zcl_onOffAttrs.startUpOnOff        },
 
-    { ZCL_ATTRID_GLOBAL_CLUSTER_REVISION,   ZCL_UINT16,     R,  (uint8_t*)&zcl_attr_global_clusterRevision},
+    { ZCL_ATTRID_GLOBAL_CLUSTER_REVISION,   ZCL_UINT16,     R,      (uint8_t*)&zcl_attr_global_clusterRevision      },
 };
 
 #define ZCL_ONOFF_ATTR_NUM   sizeof(onOff_attrTbl) / sizeof(zclAttrInfo_t)
@@ -246,7 +246,7 @@ const zclAttrInfo_t onOff_attrTbl[] = {
 
 zcl_onOffCfgAttr_t g_zcl_onOffCfgAttrs = {
     .switchType        = ZCL_SWITCH_TYPE_TOGGLE,
-    .switchActions     = ZCL_SWITCH_ACTION_TOGGLE,
+    .switchActions     = ZCL_SWITCH_ACTION_ON_OFF,
     .custom_swtichType = ZCL_SWITCH_TYPE_TOGGLE,
 };
 
