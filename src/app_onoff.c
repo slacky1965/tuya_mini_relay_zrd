@@ -2,6 +2,10 @@
 
 void cmdOnOff_toggle(uint8_t ep) {
 
+#if UART_PRINTF_MODE && DEBUG_ONOFF
+    printf("cmdOnOff_toggle\r\n");
+#endif
+
     zcl_onOffAttr_t *pOnOff = zcl_onOffAttrsGet();
     config->status_onoff = !config->status_onoff;
     config_save();
@@ -17,6 +21,10 @@ void cmdOnOff_toggle(uint8_t ep) {
 
 void cmdOnOff_on(uint8_t ep) {
 
+#if UART_PRINTF_MODE && DEBUG_ONOFF
+    printf("cmdOnOff_on\r\n");
+#endif
+
     zcl_onOffAttr_t *pOnOff = zcl_onOffAttrsGet();
     config->status_onoff = ON;
     config_save();
@@ -27,6 +35,10 @@ void cmdOnOff_on(uint8_t ep) {
 }
 
 void cmdOnOff_off(uint8_t ep) {
+
+#if UART_PRINTF_MODE && DEBUG_ONOFF
+    printf("cmdOnOff_off\r\n");
+#endif
 
     zcl_onOffAttr_t *pOnOff = zcl_onOffAttrsGet();
     config->status_onoff = OFF;
