@@ -126,6 +126,8 @@ void zb_bdbInitCb(uint8_t status, uint8_t joinedNetwork)
         if (joinedNetwork) {
             heartInterval = 1000;
 
+            g_appCtx.net_steer_start = false;
+
 #ifdef ZCL_OTA
             ota_queryStart(OTA_PERIODIC_QUERY_INTERVAL);
 #endif
@@ -174,6 +176,8 @@ void zb_bdbCommissioningCb(uint8_t status, void *arg)
     switch (status) {
     case BDB_COMMISSION_STA_SUCCESS:
         heartInterval = 1000;
+
+        g_appCtx.net_steer_start = false;
 
         light_blink_start(2, 200, 200);
 
@@ -279,6 +283,9 @@ s32 app_softReset(void *arg)
  */
 void app_leaveCnfHandler(nlme_leave_cnf_t *pLeaveCnf)
 {
+
+//    printf("app_leaveCnfHandler\r\n");
+
     if(pLeaveCnf->status == SUCCESS){
 
         zb_deviceFactoryNewSet(true);
