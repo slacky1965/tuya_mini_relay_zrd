@@ -8,6 +8,15 @@
 extern "C" {
 #endif
 
+/************************* Configure SWITCH GPIO ***************************************/
+#define SWITCH_GPIO             GPIO_PD4
+#define PD4_INPUT_ENABLE        ON
+#define PD4_DATA_OUT            OFF
+#define PD4_OUTPUT_ENABLE       OFF
+#define PD4_FUNC                AS_GPIO
+#define PULL_WAKEUP_SRC_PD4     PM_PIN_PULLDOWN_100K
+
+
 /************************* Configure KEY GPIO ***************************************/
 #define MAX_BUTTON_NUM  1
 

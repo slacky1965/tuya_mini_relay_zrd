@@ -62,9 +62,10 @@ extern "C" {
 #define UART_PRINTF_MODE                ON
 #define DEBUG_SAVE	                    ON
 #define DEBUG_BUTTON                    ON
+#define DEBUG_SWITCH                    ON
 #define DEBUG_PACKAGE                   OFF
 #define DEBUG_CONFIG                    OFF
-#define DEBUG_ONOFF                     OFF
+#define DEBUG_ONOFF                     ON
 #define DEBUG_TIME                      OFF
 #define DEBUG_REPORTING                 OFF
 #define DEBUG_OTA                       OFF

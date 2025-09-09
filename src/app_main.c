@@ -130,9 +130,10 @@ void user_app_init(void)
 void app_task(void) {
 
     button_handler();
+    switch_handler();
     monitoring_handler();
 
-    if (BDB_STATE_GET() == BDB_STATE_IDLE && !button_idle()) {
+    if (BDB_STATE_GET() == BDB_STATE_IDLE && !button_idle() && !switch_idle()) {
         report_handler();
     }
 }

@@ -9,6 +9,7 @@
 
 #include "app_dev_config.h"
 #include "app_onoff.h"
+#include "app_switch.h"
 #include "app_bootloader.h"
 #include "zcl_onoffSwitchCfg.h"
 #include "app_reporting.h"
