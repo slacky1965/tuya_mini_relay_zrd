@@ -3,29 +3,33 @@
 #define DEBOUNCE_SWITCH     8       /* number of polls for debounce                 */
 #define FR_COUNTER_MAX      8       /* number for factory reset                     */
 
+typedef enum {
+    SWITCH_OFF = 0,
+    SWITCH_ON,
+    SWITCH_FLOAT,
+} switch_status_t;
+
 typedef struct {
     ev_timer_event_t *timerCounterEvt;
-    bool    status;                 /* true - switch is on, false - switch is off   */
+    switch_status_t   status;
     uint8_t debounce;
     uint8_t counter;
     uint8_t fr_counter;             /* factory reset counter                        */
 } app_switch_t;
 
 static app_switch_t app_switch_cfg = {
-    .status = false,
-    .debounce = 1,
+    .status = SWITCH_FLOAT,
+    .debounce = (DEBOUNCE_SWITCH / 2),
     .counter = 0,
     .fr_counter = 0,
     .timerCounterEvt = NULL,
 };
 
 static app_switch_t *app_switch = &app_switch_cfg;
-//static bool factory_reset = false;
 
 static int32_t net_steer_start_offCb(void *args) {
 
     g_appCtx.net_steer_start = false;
-//    factory_reset = false;
 
     light_blink_stop();
 
@@ -52,7 +56,7 @@ static int32_t switch_counterCb(void *args) {
         TL_SCHEDULE_TASK(switch_factory_reset_start, NULL);
     }
 
-    if (!app_switch->status) {
+    if (app_switch->status == SWITCH_OFF) {
         if (config->switchType == ZCL_SWITCH_TYPE_MOMENTARY) {
             printf("FR Switch is OFF\r\n");
             cmdOnOff_off(APP_ENDPOINT1);
@@ -69,11 +73,11 @@ void switch_handler() {
 
 
     if (drv_gpio_read(SWITCH_GPIO)) {
-        if (!app_switch->status) {
+        if (app_switch->status != SWITCH_ON) {
             if (app_switch->debounce != DEBOUNCE_SWITCH) {
                 app_switch->debounce++;
                 if (app_switch->debounce == DEBOUNCE_SWITCH) {
-                    app_switch->status = true;
+                    app_switch->status = SWITCH_ON;
                     app_switch->counter++;
                     if (app_switch->timerCounterEvt) {
                         TL_ZB_TIMER_CANCEL(&app_switch->timerCounterEvt);
@@ -93,11 +97,11 @@ void switch_handler() {
             }
         }
     } else {
-        if (app_switch->status) {
+        if (app_switch->status != SWITCH_OFF) {
             if (app_switch->debounce != 1) {
                 app_switch->debounce--;
                 if (app_switch->debounce == 1) {
-                    app_switch->status = false;
+                    app_switch->status = SWITCH_OFF;
                     if (!app_switch->timerCounterEvt) {
 #if UART_PRINTF_MODE && DEBUG_SWITCH
                         printf("Switch is OFF\r\n");
