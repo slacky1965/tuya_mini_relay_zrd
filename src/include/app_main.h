@@ -32,6 +32,8 @@ typedef struct{
     ev_timer_event_t *timerFactoryReset;
     ev_timer_event_t *timerLedEvt;
 
+    bool net_steer_start;
+
     button_t button[MAX_BUTTON_NUM];
     u8  keyPressed;
 

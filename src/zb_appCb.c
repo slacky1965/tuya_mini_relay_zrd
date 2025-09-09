@@ -284,8 +284,8 @@ void app_leaveCnfHandler(nlme_leave_cnf_t *pLeaveCnf)
         zb_deviceFactoryNewSet(true);
 
         bdb_networkSteerStart();
-        light_blink_stop();
-        light_blink_start(90, 250, 750);
+
+        if (!g_appCtx.net_steer_start) light_blink_start(90, 250, 750);
     }
 }
 

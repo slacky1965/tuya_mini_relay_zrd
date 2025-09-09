@@ -2,15 +2,15 @@
 
 bool factory_reset = false;
 
-//static int32_t net_steer_start_offCb(void *args) {
-//
-////    g_appCtx.net_steer_start = false;
-//    factory_reset = false;
-//
-//    light_blink_stop();
-//
-//    return -1;
-//}
+static int32_t net_steer_start_offCb(void *args) {
+
+    g_appCtx.net_steer_start = false;
+    factory_reset = false;
+
+    light_blink_stop();
+
+    return -1;
+}
 
 static void buttonKeepPressed(u8 btNum) {
     g_appCtx.button[btNum-1].state = APP_FACTORY_NEW_DOING;
@@ -40,6 +40,8 @@ static void buttonKeepPressed(u8 btNum) {
 //            printf("2 Factory new: %s\r\n", zb_isDeviceFactoryNew()?"yes":"no");
         }
 
+        g_appCtx.net_steer_start = true;
+        TL_ZB_TIMER_SCHEDULE(net_steer_start_offCb, NULL, TIMEOUT_1MIN30SEC);
         light_blink_start(90, 250, 750);
     }
 }
