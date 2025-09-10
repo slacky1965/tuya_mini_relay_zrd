@@ -189,7 +189,7 @@ static void app_zclWriteReqCmd(uint16_t clusterId, zclWriteCmd_t *pWriteReqCmd)
             if (attr[i].attrID == ZCL_ATTRID_START_UP_ONOFF) {
                 uint8_t startup = attr[i].attrData[0];
                 printf("startup: 0x%02x\r\n", startup);
-                config->startUpOnOff = startup;
+                relay_settings.startUpOnOff = startup;
                 save = true;
             }
         }
@@ -198,20 +198,20 @@ static void app_zclWriteReqCmd(uint16_t clusterId, zclWriteCmd_t *pWriteReqCmd)
             if (attr[i].attrID == CUSTOM_ATTRID_SWITCH_TYPE) {
                 uint8_t type = attr[i].attrData[0];
                 printf("type: 0x%02x\r\n", type);
-                config->switchType = type;
+                relay_settings.switchType = type;
                 zcl_onOffCfgAttr_t *pOnOffCfg = zcl_onOffCfgAttrsGet();
                 pOnOffCfg->switchType = type;
                 save = true;
             } else if (attr[i].attrID == ZCL_ATTRID_SWITCH_ACTION) {
                 uint8_t action = attr[i].attrData[0];
                 printf("action: 0x%02x\r\n", action);
-                config->switchActions = action;
+                relay_settings.switchActions = action;
                 save = true;
             }
         }
     }
 
-    config_save();
+    relay_settings_save();
 
 #ifdef ZCL_POLL_CTRL
     if(clusterId == ZCL_CLUSTER_GEN_POLL_CONTROL){

@@ -100,7 +100,7 @@ void user_app_init(void)
 	zcl_reportingTabInit();
 
 	start_message();
-    config_restore();
+	relay_settings_restore();
 
 	/* Register ZCL specific cluster information */
 	zcl_register(APP_ENDPOINT1, APP_CB_CLUSTER_NUM, (zcl_specClusterInfo_t *)g_appClusterList);

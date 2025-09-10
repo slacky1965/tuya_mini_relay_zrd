@@ -57,7 +57,7 @@ static int32_t switch_counterCb(void *args) {
     }
 
     if (app_switch->status == SWITCH_OFF) {
-        if (config->switchType == ZCL_SWITCH_TYPE_MOMENTARY) {
+        if (relay_settings.switchType == ZCL_SWITCH_TYPE_MOMENTARY) {
             printf("FR Switch is OFF\r\n");
             cmdOnOff_off(APP_ENDPOINT1);
         }
@@ -69,6 +69,29 @@ static int32_t switch_counterCb(void *args) {
     return -1;
 }
 
+static void check_first_start(switch_status_t status) {
+
+    switch(relay_settings.startUpOnOff) {
+        case ZCL_START_UP_ONOFF_SET_ONOFF_TO_PREVIOUS:
+            if (relay_settings.status_onoff) cmdOnOff_on(APP_ENDPOINT1);
+            else cmdOnOff_off(APP_ENDPOINT1);
+            break;
+        case ZCL_START_UP_ONOFF_SET_ONOFF_TOGGLE:
+            cmdOnOff_toggle(APP_ENDPOINT1);
+            break;
+        case ZCL_START_UP_ONOFF_SET_ONOFF_TO_ON:
+            cmdOnOff_on(APP_ENDPOINT1);
+            break;
+        case ZCL_START_UP_ONOFF_SET_ONOFF_TO_OFF:
+            cmdOnOff_off(APP_ENDPOINT1);
+            break;
+        default:
+            cmdOnOff_off(APP_ENDPOINT1);
+            break;
+    }
+    app_switch->status = status;
+}
+
 void switch_handler() {
 
 
@@ -77,20 +100,25 @@ void switch_handler() {
             if (app_switch->debounce != DEBOUNCE_SWITCH) {
                 app_switch->debounce++;
                 if (app_switch->debounce == DEBOUNCE_SWITCH) {
-                    app_switch->status = SWITCH_ON;
-                    app_switch->counter++;
-                    if (app_switch->timerCounterEvt) {
-                        TL_ZB_TIMER_CANCEL(&app_switch->timerCounterEvt);
-                    }
-                    app_switch->timerCounterEvt = TL_ZB_TIMER_SCHEDULE(switch_counterCb, NULL, TIMEOUT_1SEC);
-                    if (app_switch->counter == 1) {
+                    if (app_switch->status == SWITCH_FLOAT) {
+                        check_first_start(SWITCH_ON);
+                    } else {
+                        app_switch->status = SWITCH_ON;
+                        app_switch->counter++;
+                        if (app_switch->timerCounterEvt) {
+                            TL_ZB_TIMER_CANCEL(&app_switch->timerCounterEvt);
+                        }
+                        app_switch->timerCounterEvt = TL_ZB_TIMER_SCHEDULE(switch_counterCb, NULL, TIMEOUT_1SEC);
+                        if (app_switch->counter == 1) {
 #if UART_PRINTF_MODE && DEBUG_SWITCH
-                        printf("Switch is ON\r\n");
+                            printf("Switch is ON\r\n");
 #endif
-                        if (config->switchType == ZCL_SWITCH_TYPE_MOMENTARY) {
-                            cmdOnOff_on(APP_ENDPOINT1);
-                        } else {
-                            cmdOnOff_toggle(APP_ENDPOINT1);
+                            if (relay_settings.switchType == ZCL_SWITCH_TYPE_MOMENTARY) {
+                                if (relay_settings.switchActions == ZCL_SWITCH_ACTION_OFF_ON) cmdOnOff_on(APP_ENDPOINT1);
+                                else cmdOnOff_off(APP_ENDPOINT1);
+                            } else {
+                                cmdOnOff_toggle(APP_ENDPOINT1);
+                            }
                         }
                     }
                 }
@@ -101,13 +129,18 @@ void switch_handler() {
             if (app_switch->debounce != 1) {
                 app_switch->debounce--;
                 if (app_switch->debounce == 1) {
-                    app_switch->status = SWITCH_OFF;
-                    if (!app_switch->timerCounterEvt) {
+                    if (app_switch->status == SWITCH_FLOAT) {
+                        check_first_start(SWITCH_OFF);
+                    } else {
+                        app_switch->status = SWITCH_OFF;
+                        if (!app_switch->timerCounterEvt) {
 #if UART_PRINTF_MODE && DEBUG_SWITCH
-                        printf("Switch is OFF\r\n");
+                            printf("Switch is OFF\r\n");
 #endif
-                        if (config->switchType == ZCL_SWITCH_TYPE_MOMENTARY) {
-                            cmdOnOff_off(APP_ENDPOINT1);
+                            if (relay_settings.switchType == ZCL_SWITCH_TYPE_MOMENTARY) {
+                                if (relay_settings.switchActions == ZCL_SWITCH_ACTION_OFF_ON) cmdOnOff_off(APP_ENDPOINT1);
+                                else cmdOnOff_on(APP_ENDPOINT1);
+                            }
                         }
                     }
                 }

@@ -14,7 +14,6 @@ $(OUT_PATH)/$(SRC_PATH)/app_bootloader.o \
 $(OUT_PATH)/$(SRC_PATH)/app_endpoint_cfg.o \
 $(OUT_PATH)/$(SRC_PATH)/app_reporting.o \
 $(OUT_PATH)/$(SRC_PATH)/app_utility.o \
-$(OUT_PATH)/$(SRC_PATH)/app_dev_config.o \
 $(OUT_PATH)/$(SRC_PATH)/app_onoff.o \
 $(OUT_PATH)/$(SRC_PATH)/app_led.o \
 $(OUT_PATH)/$(SRC_PATH)/app_button.o \

@@ -7,7 +7,6 @@
 #include "ota.h"
 #include "gp.h"
 
-#include "app_dev_config.h"
 #include "app_onoff.h"
 #include "app_switch.h"
 #include "app_bootloader.h"
