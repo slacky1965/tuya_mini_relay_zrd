@@ -59,7 +59,8 @@ static int32_t switch_counterCb(void *args) {
     if (app_switch->status == SWITCH_OFF) {
         if (relay_settings.switchType == ZCL_SWITCH_TYPE_MOMENTARY) {
             printf("FR Switch is OFF\r\n");
-            cmdOnOff_off(APP_ENDPOINT1);
+            if (relay_settings.switchActions == ZCL_SWITCH_ACTION_OFF_ON) cmdOnOff_off(APP_ENDPOINT1);
+            else cmdOnOff_on(APP_ENDPOINT1);
         }
     }
 
