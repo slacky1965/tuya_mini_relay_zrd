@@ -88,8 +88,8 @@ nv_sts_t relay_settings_restore() {
 #if UART_PRINTF_MODE
         printf("Default relay settings \r\n");
 #endif
-        relay_settings_tmp.startUpOnOff = ZCL_ONOFF_STATUS_OFF;
-        relay_settings_tmp.status_onoff = OFF;
+        relay_settings_tmp.startUpOnOff = ZCL_START_UP_ONOFF_SET_ONOFF_TO_OFF;
+        relay_settings_tmp.status_onoff = ZCL_ONOFF_STATUS_OFF;
         relay_settings_tmp.switchActions = ZCL_SWITCH_ACTION_OFF_ON;
         relay_settings_tmp.switchType = ZCL_SWITCH_TYPE_MOMENTARY;
     }
