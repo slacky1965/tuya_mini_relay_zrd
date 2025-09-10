@@ -26,7 +26,7 @@ void cmdOnOff_on(uint8_t ep) {
 #endif
 
     zcl_onOffAttr_t *pOnOff = zcl_onOffAttrsGet();
-    relay_settings.status_onoff = ON;
+    relay_settings.status_onoff = ZCL_ONOFF_STATUS_ON;
     relay_settings_save();
     pOnOff->onOff = relay_settings.status_onoff;
     uint8_t status = RELAY_ON;
@@ -41,7 +41,7 @@ void cmdOnOff_off(uint8_t ep) {
 #endif
 
     zcl_onOffAttr_t *pOnOff = zcl_onOffAttrsGet();
-    relay_settings.status_onoff = OFF;
+    relay_settings.status_onoff = ZCL_ONOFF_STATUS_OFF;
     relay_settings_save();
     pOnOff->onOff = relay_settings.status_onoff;
     uint8_t status = RELAY_OFF;
