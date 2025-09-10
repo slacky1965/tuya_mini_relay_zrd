@@ -166,6 +166,9 @@ flash-orig-write:
 flash-orig-read:
 	@python3 $(TOOLS_PATH)/TlsrPgm.py -p$(DOWNLOAD_PORT) -z11 -a 100 -s -m rf 0 0x100000 tuya_mini_relay_orig.bin
 	
+erase-flash-macaddr:
+	@python3 $(TOOLS_PATH)/TlsrPgm.py -p$(DOWNLOAD_PORT) -z11 -a 100 -s es 0xFF000 0x1000
+
 
 # Main-build Target
 main-build: clean-project $(ELF_FILE) secondary-outputs
