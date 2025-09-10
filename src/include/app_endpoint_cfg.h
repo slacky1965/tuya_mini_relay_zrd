@@ -35,18 +35,18 @@ typedef struct{
  *  @brief Defined for group cluster attributes
  */
 typedef struct{
-    u8  nameSupport;
+    uint8_t  nameSupport;
 }zcl_groupAttr_t;
 
 /**
  *  @brief Defined for scene cluster attributes
  */
 typedef struct{
-    u8   sceneCount;
-    u8   currentScene;
-    u8   nameSupport;
+    uint8_t   sceneCount;
+    uint8_t   currentScene;
+    uint8_t   nameSupport;
     bool sceneValid;
-    u16  currentGroup;
+    uint16_t  currentGroup;
 }zcl_sceneAttr_t;
 
 typedef struct {
@@ -59,11 +59,11 @@ typedef struct {
  *  @brief Defined for on/off cluster attributes
  */
 typedef struct {
-    u16 onTime;
-    u16 offWaitTime;
-    u8  startUpOnOff;
-    bool onOff;
-    bool globalSceneControl;
+    uint16_t onTime;
+    uint16_t offWaitTime;
+    uint8_t  startUpOnOff;
+    bool     onOff;
+    bool     globalSceneControl;
 } zcl_onOffAttr_t;
 
 typedef struct {
