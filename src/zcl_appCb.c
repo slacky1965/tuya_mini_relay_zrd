@@ -199,8 +199,7 @@ static void app_zclWriteReqCmd(uint16_t clusterId, zclWriteCmd_t *pWriteReqCmd)
                 uint8_t type = attr[i].attrData[0];
                 printf("type: 0x%02x\r\n", type);
                 relay_settings.switchType = type;
-                zcl_onOffCfgAttr_t *pOnOffCfg = zcl_onOffCfgAttrsGet();
-                pOnOffCfg->switchType = type;
+                g_zcl_onOffCfgAttrs.switchType = type;
                 save = true;
             } else if (attr[i].attrID == ZCL_ATTRID_SWITCH_ACTION) {
                 uint8_t action = attr[i].attrData[0];
@@ -211,7 +210,7 @@ static void app_zclWriteReqCmd(uint16_t clusterId, zclWriteCmd_t *pWriteReqCmd)
         }
     }
 
-    relay_settings_save();
+    if (save) relay_settings_save();
 
 #ifdef ZCL_POLL_CTRL
     if(clusterId == ZCL_CLUSTER_GEN_POLL_CONTROL){
