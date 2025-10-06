@@ -69,7 +69,6 @@ const uint16_t app_outClusterList[] = {
 #ifdef ZCL_OTA
     ZCL_CLUSTER_OTA,
 #endif
-    ZCL_CLUSTER_GEN_TIME,
 };
 
 /**
@@ -155,23 +154,6 @@ const zclAttrInfo_t identify_attrTbl[] =
 };
 
 #define ZCL_IDENTIFY_ATTR_NUM    sizeof(identify_attrTbl) / sizeof(zclAttrInfo_t)
-
-zcl_timeAttr_t g_zcl_timeAttrs = {
-    .time_utc   = 0xffffffff,
-    .time_local = 0xffffffff,
-    .time_status = 0,
-};
-
-const zclAttrInfo_t time_attrTbl[] =
-{
-    { ZCL_ATTRID_TIME,                      ZCL_UTC,        RWR,    (uint8_t*)&g_zcl_timeAttrs.time_utc         },
-    { ZCL_ATTRID_LOCAL_TIME,                ZCL_UINT32,     R,      (uint8_t*)&g_zcl_timeAttrs.time_local       },
-    { ZCL_ATTRID_TIME_STATUS,               ZCL_BITMAP8,    RW,     (uint8_t*)&g_zcl_timeAttrs.time_status      },
-
-    { ZCL_ATTRID_GLOBAL_CLUSTER_REVISION,   ZCL_UINT16,     R,      (uint8_t*)&zcl_attr_global_clusterRevision  },
-};
-
-#define ZCL_TIME_ATTR_NUM    sizeof(time_attrTbl) / sizeof(zclAttrInfo_t)
 
 #ifdef ZCL_GROUP
 /* Group */
@@ -265,8 +247,6 @@ const zclAttrInfo_t onOffCfg_attrTbl[] =
 
 zcl_seAttr_t g_zcl_seAttrs = {
     .unit_of_measure = 0x00,                                        // kWh
-    .multiplier = 1,
-    .divisor = 1,
     .summation_formatting = 0xFA,                                   // bit7 - 1, bit6-bit3 - 15, bit2-bit0 - 2 (b11111010)
     .status = 0,
     .device_type = 0,                                               // 0 - Electric Metering
@@ -276,8 +256,6 @@ const zclAttrInfo_t se_attrTbl[] = {
     {ZCL_ATTRID_CURRENT_SUMMATION_DELIVERD,         ZCL_UINT48,     RR, (uint8_t*)&g_zcl_seAttrs.cur_sum_delivered      },
     {ZCL_ATTRID_STATUS,                             ZCL_BITMAP8,    RR,  (uint8_t*)&g_zcl_seAttrs.status                },
     {ZCL_ATTRID_UNIT_OF_MEASURE,                    ZCL_UINT8,      R,  (uint8_t*)&g_zcl_seAttrs.unit_of_measure        },
-    {ZCL_ATTRID_MULTIPLIER,                         ZCL_UINT24,     RR, (uint8_t*)&g_zcl_seAttrs.multiplier             },
-    {ZCL_ATTRID_DIVISOR,                            ZCL_UINT24,     RR, (uint8_t*)&g_zcl_seAttrs.divisor                },
     {ZCL_ATTRID_SUMMATION_FORMATTING,               ZCL_BITMAP8,    R,  (uint8_t*)&g_zcl_seAttrs.summation_formatting   },
     {ZCL_ATTRID_METERING_DEVICE_TYPE,               ZCL_BITMAP8,    R,  (uint8_t*)&g_zcl_seAttrs.device_type            },
 
@@ -289,33 +267,17 @@ const zclAttrInfo_t se_attrTbl[] = {
 zcl_msAttr_t g_zcl_msAttrs = {
     .type = 0x09,               // bit0: Active measurement (AC). bit3: Phase A measurement
     .freq = 0xffff,
-    .freq_multiplier = 1,
-    .freq_divisor = 1,
     .current = 0xffff,
-    .current_multiplier = 1,
-    .current_divisor = 1,
     .voltage = 0xffff,
-    .voltage_multiplier = 1,
-    .voltage_divisor = 1,
     .power = 0xffff,
-    .power_multiplier = 1,
-    .power_divisor = 1,
 };
 
 const zclAttrInfo_t ms_attrTbl[] = {
     {ZCL_ATTRID_MEASUREMENT_TYPE,           ZCL_BITMAP32, R,    (uint8_t*)&g_zcl_msAttrs.type               },
     {ZCL_ATTRID_AC_FREQUENCY,               ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.freq               },
-    {ZCL_ATTRID_AC_FREQUENCY_MULTIPLIER,    ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.freq_multiplier    },
-    {ZCL_ATTRID_AC_FREQUENCY_DIVISOR,       ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.freq_divisor       },
     {ZCL_ATTRID_RMS_CURRENT,                ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.current            },
-    {ZCL_ATTRID_AC_CURRENT_MULTIPLIER,      ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.current_multiplier },
-    {ZCL_ATTRID_AC_CURRENT_DIVISOR,         ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.current_divisor    },
     {ZCL_ATTRID_RMS_VOLTAGE,                ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.voltage            },
-    {ZCL_ATTRID_AC_VOLTAGE_MULTIPLIER,      ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.voltage_multiplier },
-    {ZCL_ATTRID_AC_VOLTAGE_DIVISOR,         ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.voltage_divisor    },
     {ZCL_ATTRID_ACTIVE_POWER,               ZCL_INT16,    RR,   (uint8_t*)&g_zcl_msAttrs.power              },
-    {ZCL_ATTRID_AC_POWER_MULTIPLIER,        ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.power_multiplier   },
-    {ZCL_ATTRID_AC_POWER_DIVISOR,           ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.power_divisor      },
 
     { ZCL_ATTRID_GLOBAL_CLUSTER_REVISION,   ZCL_UINT16,   R,    (uint8_t*)&zcl_attr_global_clusterRevision  },
 };
@@ -335,7 +297,6 @@ const zcl_specClusterInfo_t g_appClusterList[] =
 #ifdef ZCL_SCENE
     {ZCL_CLUSTER_GEN_SCENES,                MANUFACTURER_CODE_NONE, ZCL_SCENE_ATTR_NUM,         scene_attrTbl,      zcl_scene_register,     app_sceneCb     },
 #endif
-    {ZCL_CLUSTER_GEN_TIME,                  MANUFACTURER_CODE_NONE, ZCL_TIME_ATTR_NUM,          time_attrTbl,       zcl_time_register,      app_timeCb      },
 #ifdef ZCL_ON_OFF
     {ZCL_CLUSTER_GEN_ON_OFF,                MANUFACTURER_CODE_NONE, ZCL_ONOFF_ATTR_NUM,         onOff_attrTbl,      zcl_onOff_register,     app_onOffCb     },
 #endif

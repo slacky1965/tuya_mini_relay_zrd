@@ -122,7 +122,7 @@ void user_app_init(void)
 
     app_uart_init();
 
-    TL_ZB_TIMER_SCHEDULE(app_time_cmdCb, NULL, TIMEOUT_10SEC);
+    TL_ZB_TIMER_SCHEDULE(app_monitoringCb, NULL, TIMEOUT_1SEC);
 
 //    printf("FLASH_ADDR_OF_OTA_IMAGE: 0x%08x\r\n", FLASH_ADDR_OF_OTA_IMAGE);
 }
@@ -133,7 +133,7 @@ void app_task(void) {
     switch_handler();
     monitoring_handler();
 
-    if (BDB_STATE_GET() == BDB_STATE_IDLE && !button_idle() && !switch_idle()) {
+    if (BDB_STATE_GET() == BDB_STATE_IDLE && !button_idle() && !switch_idle() && !available_ring_buff()) {
         report_handler();
     }
 }

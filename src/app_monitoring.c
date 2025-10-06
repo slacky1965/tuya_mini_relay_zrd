@@ -1,8 +1,15 @@
 #include "app_main.h"
 
+#define BL0942_POWER_REF        596
+#define BL0942_VOLTAGE_REF      15873.35944299
+#define BL0942_CURRENT_REF      251213.46469622
+#define BL0942_ENERGY_REF       3304.61127328
+
 static uint8_t pkt_out[2] = {0x58, 0xAA};
 static uint8_t pkt_in[PKT_SIZE] = {0};
 static uint32_t current_adc, voltage_adc, power_adc, freq_adc, energy_adc;
+static uint16_t current, voltage, power, freq;
+static uint64_t tariff_summ;
 
 #if UART_PRINTF_MODE && DEBUG_PACKAGE
 void static print_package(uint8_t *head, uint8_t *buff, size_t len) {
@@ -75,6 +82,14 @@ void send_uart_commandCb(void *args) {
 //    return len;
 }
 
+int32_t app_monitoringCb(void *arg) {
+
+    TL_SCHEDULE_TASK(send_uart_commandCb, NULL);
+
+    return 0;
+}
+
+
 void monitoring_handler() {
 
     size_t load_size = 0;
@@ -124,11 +139,24 @@ void monitoring_handler() {
                 power_adc = 0x00000000 | (uint32_t)pkt->watt_2 << 16 | (uint32_t)pkt->watt_1 << 8 | (uint32_t)pkt->watt_0;
                 freq_adc = 0x00000000 | (uint32_t)pkt->freq_2 << 16 | (uint32_t)pkt->freq_1 << 8 | (uint32_t)pkt->freq_0;
                 energy_adc = 0x00000000 | (uint32_t)pkt->cf_cnt_2 << 16 | (uint32_t)pkt->cf_cnt_1 << 8 | (uint32_t)pkt->cf_cnt_0;
-//                printf("current_adc: %d\r\n", current_adc);
-//                printf("voltage_adc: %d\r\n", voltage_adc);
-//                printf("power_adc: %d\r\n", power_adc);
-//                printf("freq_adc: %d\r\n", freq_adc);
-//                printf("energy_adc: %d\r\n", energy_adc);
+
+                current = (uint16_t)((float)(current_adc/BL0942_CURRENT_REF*100.0));
+                voltage = (uint16_t)((float)(voltage_adc/BL0942_VOLTAGE_REF*100.0));
+                power = (uint16_t)((float)(power_adc/BL0942_POWER_REF*100.0));
+                freq = (uint16_t)((float)(1000000.0/freq_adc*100.0));
+                tariff_summ = (uint64_t)((float)(energy_adc/BL0942_ENERGY_REF*100.0));
+
+//                printf("current_adc: %d, current: %d\r\n", current_adc, current);
+//                printf("voltage_adc: %d, voltage: %d\r\n", voltage_adc, voltage);
+//                printf("power_adc: %d, power: %d\r\n", power_adc, power);
+//                printf("freq_adc: %d, freq: %d\r\n", freq_adc, freq);
+//                printf("energy_adc: %d, energy: %d\r\n", energy_adc, tariff_summ);
+
+                zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_MS_ELECTRICAL_MEASUREMENT, ZCL_ATTRID_RMS_VOLTAGE, (uint8_t*)&voltage);
+                zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_MS_ELECTRICAL_MEASUREMENT, ZCL_ATTRID_RMS_CURRENT, (uint8_t*)&current);
+                zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_MS_ELECTRICAL_MEASUREMENT, ZCL_ATTRID_ACTIVE_POWER, (uint8_t*)&power);
+                zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_MS_ELECTRICAL_MEASUREMENT, ZCL_ATTRID_AC_FREQUENCY, (uint8_t*)&freq);
+                zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_SE_METERING, ZCL_ATTRID_CURRENT_SUMMATION_DELIVERD, (uint8_t*)&tariff_summ);
             }
         }
     }

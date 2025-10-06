@@ -33,6 +33,7 @@ typedef struct __attribute__((packed)) {
 #define PKT_SIZE    sizeof(app_monitoring_t)
 
 void send_uart_commandCb(void *args);
+int32_t app_monitoringCb(void *arg);
 void monitoring_handler();
 
 #endif /* SRC_INCLUDE_APP_MONITORING_H_ */

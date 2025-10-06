@@ -19,7 +19,6 @@ $(OUT_PATH)/$(SRC_PATH)/app_led.o \
 $(OUT_PATH)/$(SRC_PATH)/app_button.o \
 $(OUT_PATH)/$(SRC_PATH)/app_switch.o \
 $(OUT_PATH)/$(SRC_PATH)/app_arith64.o \
-$(OUT_PATH)/$(SRC_PATH)/app_time.o \
 $(OUT_PATH)/$(SRC_PATH)/app_relay.o \
 $(OUT_PATH)/$(SRC_PATH)/app_uart.o \
 $(OUT_PATH)/$(SRC_PATH)/app_monitoring.o \

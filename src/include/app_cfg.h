@@ -218,7 +218,7 @@ extern "C" {
 #define ZCL_ON_OFF_SWITCH_CFG_SUPPORT               ON
 #define ZCL_OTA_SUPPORT                             ON
 #define ZCL_GP_SUPPORT                              ON
-#define ZCL_TIME_SUPPORT                            ON
+//#define ZCL_TIME_SUPPORT                            ON
 #define ZCL_METERING_SUPPORT                        ON
 #define ZCL_ELECTRICAL_MEASUREMENT_SUPPORT          ON
 #if TOUCHLINK_SUPPORT

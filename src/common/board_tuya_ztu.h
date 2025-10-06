@@ -9,12 +9,12 @@ extern "C" {
 #endif
 
 /************************* Configure SWITCH GPIO ***************************************/
-#define SWITCH_GPIO             GPIO_PD4
-#define PD4_INPUT_ENABLE        ON
-#define PD4_DATA_OUT            OFF
-#define PD4_OUTPUT_ENABLE       OFF
-#define PD4_FUNC                AS_GPIO
-#define PULL_WAKEUP_SRC_PD4     PM_PIN_PULLDOWN_100K
+#define SWITCH_GPIO             GPIO_PD2
+#define PD2_INPUT_ENABLE        ON
+//#define PD2_DATA_OUT            OFF
+#define PD2_OUTPUT_ENABLE       OFF
+#define PD2_FUNC                AS_GPIO
+//#define PULL_WAKEUP_SRC_PD4     PM_PIN_PULLDOWN_100K
 
 
 /************************* Configure KEY GPIO ***************************************/
@@ -39,15 +39,6 @@ enum {
 
 #define KB_DRIVE_PINS  {NULL }
 #define KB_SCAN_PINS   {BUTTON}
-
-/************************* Configure Switch ***************************************/
-
-#define SWITCH                  GPIO_PB5
-#define PB5_INPUT_ENABLE        ON
-#define PB5_DATA_OUT            OFF
-#define PB5_OUTPUT_ENABLE       OFF
-#define PB5_FUNC                AS_GPIO
-//#define PULL_WAKEUP_SRC_PB5     PM_PIN_PULLUP_10K
 
 /************************** Configure LED ****************************************/
 

@@ -16,7 +16,6 @@
 #include "app_button.h"
 #include "app_led.h"
 #include "app_utility.h"
-#include "app_time.h"
 #include "app_relay.h"
 #include "app_uart.h"
 #include "app_monitoring.h"

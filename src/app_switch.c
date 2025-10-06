@@ -1,7 +1,7 @@
 #include "app_main.h"
 
-#define DEBOUNCE_SWITCH     8       /* number of polls for debounce                 */
-#define FR_COUNTER_MAX      8       /* number for factory reset                     */
+#define DEBOUNCE_SWITCH     128     /* number of polls for debounce                 */
+#define FR_COUNTER_MAX      10      /* number for factory reset                     */
 
 typedef enum {
     SWITCH_OFF = 0,
@@ -96,7 +96,7 @@ static void check_first_start(switch_status_t status) {
 void switch_handler() {
 
 
-    if (drv_gpio_read(SWITCH_GPIO)) {
+    if (!drv_gpio_read(SWITCH_GPIO)) {
         if (app_switch->status != SWITCH_ON) {
             if (app_switch->debounce != DEBOUNCE_SWITCH) {
                 app_switch->debounce++;
@@ -110,6 +110,7 @@ void switch_handler() {
                             TL_ZB_TIMER_CANCEL(&app_switch->timerCounterEvt);
                         }
                         app_switch->timerCounterEvt = TL_ZB_TIMER_SCHEDULE(switch_counterCb, NULL, TIMEOUT_1SEC);
+                        printf("app_switch->counter: %d\r\n", app_switch->counter);
                         if (app_switch->counter == 1) {
 #if UART_PRINTF_MODE && DEBUG_SWITCH
                             printf("Switch is ON\r\n");

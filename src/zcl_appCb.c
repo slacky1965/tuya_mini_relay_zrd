@@ -143,7 +143,7 @@ static void app_zclReadRspCmd(zclReadRspCmd_t *pReadRspCmd) {
     uint8_t numAttr = pReadRspCmd->numAttr;
     zclReadRspStatus_t *attrList = pReadRspCmd->attrList;
     uint32_t time_local;
-    bool time_sent = false;
+//    bool time_sent = false;
 
     for (uint8_t i = 0; i < numAttr; i++) {
         if (attrList[i].attrID == ZCL_ATTRID_LOCAL_TIME && attrList[i].status == ZCL_STA_SUCCESS) {
@@ -152,16 +152,16 @@ static void app_zclReadRspCmd(zclReadRspCmd_t *pReadRspCmd) {
             time_local |= (attrList[i].data[2] << 16) & 0x00ffffff;
             time_local |= (attrList[i].data[3] << 24) & 0xffffffff;
             zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_GEN_TIME, ZCL_ATTRID_LOCAL_TIME, (uint8_t*)&time_local);
-            time_sent = true;
+//            time_sent = true;
 #if UART_PRINTF_MODE && DEBUG_TIME
             printf("Sync Local Time: %d\r\n", time_local+UNIX_TIME_CONST);
 #endif
         }
     }
 
-    if (time_sent) {
-        set_time_sent();
-    }
+//    if (time_sent) {
+//        set_time_sent();
+//    }
 }
 #endif
 
@@ -800,15 +800,15 @@ status_t app_onOffCb(zclIncomingAddrInfo_t *pAddrInfo, u8 cmdId, void *cmdPayloa
         switch(cmdId){
             case ZCL_CMD_ONOFF_ON:
                 printf("pAddrInfo->dstEp: %d, cmd on\r\n", pAddrInfo->dstEp);
-//                cmdOnOff_on(pAddrInfo->dstEp, 1);
+                cmdOnOff_on(pAddrInfo->dstEp);
                 break;
             case ZCL_CMD_ONOFF_OFF:
                 printf("pAddrInfo->dstEp: %d, cmd off\r\n", pAddrInfo->dstEp);
-//                cmdOnOff_off(pAddrInfo->dstEp, 1);
+                cmdOnOff_off(pAddrInfo->dstEp);
                 break;
             case ZCL_CMD_ONOFF_TOGGLE:
                 printf("pAddrInfo->dstEp: %d, cmd toggle\r\n", pAddrInfo->dstEp);
-//                cmdOnOff_toggle(pAddrInfo->dstEp, 1);
+                cmdOnOff_toggle(pAddrInfo->dstEp);
                 break;
 //            case ZCL_CMD_OFF_WITH_EFFECT:
 //                if(pOnOff->globalSceneControl == TRUE){

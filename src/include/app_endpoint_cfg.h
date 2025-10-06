@@ -75,8 +75,6 @@ typedef struct {
 typedef struct {
     uint64_t cur_sum_delivered;
     uint8_t  unit_of_measure;       // 0x00 - kWh
-    uint32_t multiplier;
-    uint32_t divisor;
     uint8_t  status;
     uint8_t  summation_formatting;  // Bits 0 to 2: Number of Digits to the right of the Decimal Point
                                     // Bits 3 to 6: Number of Digits to the left of the Decimal Point
@@ -87,17 +85,9 @@ typedef struct {
 typedef struct {
     uint32_t type;
     uint16_t freq;
-    uint16_t freq_multiplier;
-    uint16_t freq_divisor;
     uint16_t current;
-    uint16_t current_multiplier;
-    uint16_t current_divisor;
     uint16_t voltage;
-    uint16_t voltage_multiplier;
-    uint16_t voltage_divisor;
     uint16_t power;
-    uint16_t power_multiplier;
-    uint16_t power_divisor;
 } zcl_msAttr_t;
 
 extern uint8_t APP_CB_CLUSTER_NUM;
