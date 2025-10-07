@@ -36,6 +36,8 @@ extern "C" {
     #define MCU_CORE_8258       1
 #endif
 
+#define MY_RF_POWER_INDEX   RF_POWER_INDEX_P10p46dBm
+
 #define ON                      1
 #define OFF                     0
 

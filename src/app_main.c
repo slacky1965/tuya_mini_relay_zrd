@@ -259,5 +259,7 @@ void user_init(bool isRetention)
 
     /* Initialize BDB */
     bdb_init((af_simple_descriptor_t *)&app_simpleDesc, &g_bdbCommissionSetting, &g_zbBdbCb, 1);
+
+    rf_setTxPower(MY_RF_POWER_INDEX);
 }
 
