@@ -39,162 +39,10 @@ zcl_reportingTab_t reportingTab;
  * LOCAL VARIABLES
  */
 ev_timer_event_t *reportAttrTimerEvt = NULL;
-static uint8_t counter_delivered_multdiv = 0;
-static uint8_t counter_current_multdiv = 0;
-static uint8_t counter_power_multdiv = 0;
-static uint8_t counter_voltage_multdiv = 0;
 
 /**********************************************************************
  * FUNCTIONS
  */
-
-static void report_divisor_multiplier(uint8_t endpoint, uint16_t clusterID, uint16_t profileID, zclReportCmd_t *report) {
-
-    //force report for multiplier and divisor
-    //printf("report_divisor_multiplier. clusterId: 0x%x, attrId: 0x%x\r\n", pEntry->clusterID, pEntry->attrID);
-
-    epInfo_t dstEpInfo;
-
-    struct report_t {
-        u8 numAttr;
-        zclReport_t attr[2];
-    };
-
-    struct report_t muldiv_report;
-    zclAttrInfo_t *pAttrEntry = NULL;
-
-    for (uint8_t i = 0; i < report->numAttr; i++) {
-
-        TL_SETSTRUCTCONTENT(dstEpInfo, 0);
-        dstEpInfo.dstAddrMode = APS_DSTADDR_EP_NOTPRESETNT;
-        dstEpInfo.profileId = profileID;
-
-        if (clusterID == ZCL_CLUSTER_SE_METERING) {
-            switch (report->attrList[i].attrID) {
-                case ZCL_ATTRID_CURRENT_TIER_1_SUMMATION_DELIVERD:
-                case ZCL_ATTRID_CURRENT_TIER_2_SUMMATION_DELIVERD:
-                case ZCL_ATTRID_CURRENT_TIER_3_SUMMATION_DELIVERD:
-                case ZCL_ATTRID_CURRENT_TIER_4_SUMMATION_DELIVERD:
-                    if(counter_delivered_multdiv++ == 0) {
-                        TL_SETSTRUCTCONTENT(muldiv_report, 0);
-                        pAttrEntry = zcl_findAttribute(endpoint, clusterID, ZCL_ATTRID_MULTIPLIER);
-                        if (pAttrEntry) {
-                            muldiv_report.attr[muldiv_report.numAttr].attrData = pAttrEntry->data;
-                            muldiv_report.attr[muldiv_report.numAttr].attrID = pAttrEntry->id;
-                            muldiv_report.attr[muldiv_report.numAttr].dataType = pAttrEntry->type;
-                            muldiv_report.numAttr++;
-                        }
-                        pAttrEntry = zcl_findAttribute(endpoint, clusterID, ZCL_ATTRID_DIVISOR);
-                        if (pAttrEntry) {
-                            muldiv_report.attr[muldiv_report.numAttr].attrData = pAttrEntry->data;
-                            muldiv_report.attr[muldiv_report.numAttr].attrID = pAttrEntry->id;
-                            muldiv_report.attr[muldiv_report.numAttr].dataType = pAttrEntry->type;
-                            muldiv_report.numAttr++;
-                        }
-                        if (muldiv_report.numAttr) {
-//                            printf("report tariff, counter_delivered_multdiv: %d\r\n", counter_delivered_multdiv);
-                            zcl_sendReportAttrsCmd(endpoint, &dstEpInfo, TRUE, ZCL_FRAME_SERVER_CLIENT_DIR, clusterID, (zclReportCmd_t* )&muldiv_report);
-                        }
-                    } else {
-                        if (counter_delivered_multdiv == 10) {
-                            counter_delivered_multdiv = 0;
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
-        } else if (clusterID == ZCL_CLUSTER_MS_ELECTRICAL_MEASUREMENT) {
-            switch (report->attrList[i].attrID) {
-                case ZCL_ATTRID_RMS_CURRENT:
-                    if(counter_current_multdiv++ == 0) {
-                        TL_SETSTRUCTCONTENT(muldiv_report, 0);
-                        pAttrEntry = zcl_findAttribute(endpoint, clusterID, ZCL_ATTRID_AC_CURRENT_MULTIPLIER);
-                        if (pAttrEntry) {
-                            muldiv_report.attr[muldiv_report.numAttr].attrData = pAttrEntry->data;
-                            muldiv_report.attr[muldiv_report.numAttr].attrID = pAttrEntry->id;
-                            muldiv_report.attr[muldiv_report.numAttr].dataType = pAttrEntry->type;
-                            muldiv_report.numAttr++;
-                        }
-                        pAttrEntry = zcl_findAttribute(endpoint, clusterID, ZCL_ATTRID_AC_CURRENT_DIVISOR);
-                        if (pAttrEntry) {
-                            muldiv_report.attr[muldiv_report.numAttr].attrData = pAttrEntry->data;
-                            muldiv_report.attr[muldiv_report.numAttr].attrID = pAttrEntry->id;
-                            muldiv_report.attr[muldiv_report.numAttr].dataType = pAttrEntry->type;
-                            muldiv_report.numAttr++;
-                        }
-                        if (muldiv_report.numAttr) {
-//                            printf("report current, counter_current_multdiv: %d\r\n", counter_current_multdiv);
-                            zcl_sendReportAttrsCmd(endpoint, &dstEpInfo, TRUE, ZCL_FRAME_SERVER_CLIENT_DIR, clusterID, (zclReportCmd_t* )&muldiv_report);
-                        }
-                    } else {
-                        if (counter_current_multdiv == 10) {
-                            counter_current_multdiv = 0;
-                        }
-                    }
-                    break;
-                case ZCL_ATTRID_RMS_VOLTAGE:
-                    if(counter_voltage_multdiv++ == 0) {
-                        TL_SETSTRUCTCONTENT(muldiv_report, 0);
-                        pAttrEntry = zcl_findAttribute(endpoint, clusterID, ZCL_ATTRID_AC_VOLTAGE_MULTIPLIER);
-                        if (pAttrEntry) {
-                            muldiv_report.attr[muldiv_report.numAttr].attrData = pAttrEntry->data;
-                            muldiv_report.attr[muldiv_report.numAttr].attrID = pAttrEntry->id;
-                            muldiv_report.attr[muldiv_report.numAttr].dataType = pAttrEntry->type;
-                            muldiv_report.numAttr++;
-                        }
-                        pAttrEntry = zcl_findAttribute(endpoint, clusterID, ZCL_ATTRID_AC_VOLTAGE_DIVISOR);
-                        if (pAttrEntry) {
-                            muldiv_report.attr[muldiv_report.numAttr].attrData = pAttrEntry->data;
-                            muldiv_report.attr[muldiv_report.numAttr].attrID = pAttrEntry->id;
-                            muldiv_report.attr[muldiv_report.numAttr].dataType = pAttrEntry->type;
-                            muldiv_report.numAttr++;
-                        }
-                        if (muldiv_report.numAttr) {
-//                            printf("report voltage, counter_voltage_multdiv: %d\r\n", counter_voltage_multdiv);
-                            zcl_sendReportAttrsCmd(endpoint, &dstEpInfo, TRUE, ZCL_FRAME_SERVER_CLIENT_DIR, clusterID, (zclReportCmd_t* )&muldiv_report);
-                        }
-                    } else {
-                        if (counter_voltage_multdiv == 10) {
-                            counter_voltage_multdiv = 0;
-                        }
-                    }
-                    break;
-                case ZCL_ATTRID_ACTIVE_POWER:
-                    if(counter_power_multdiv++ == 0) {
-                        TL_SETSTRUCTCONTENT(muldiv_report, 0);
-                        pAttrEntry = zcl_findAttribute(endpoint, clusterID, ZCL_ATTRID_AC_POWER_MULTIPLIER);
-                        if (pAttrEntry) {
-                            muldiv_report.attr[muldiv_report.numAttr].attrData = pAttrEntry->data;
-                            muldiv_report.attr[muldiv_report.numAttr].attrID = pAttrEntry->id;
-                            muldiv_report.attr[muldiv_report.numAttr].dataType = pAttrEntry->type;
-                            muldiv_report.numAttr++;
-                        }
-                        pAttrEntry = zcl_findAttribute(endpoint, clusterID, ZCL_ATTRID_AC_POWER_DIVISOR);
-                        if (pAttrEntry) {
-                            muldiv_report.attr[muldiv_report.numAttr].attrData = pAttrEntry->data;
-                            muldiv_report.attr[muldiv_report.numAttr].attrID = pAttrEntry->id;
-                            muldiv_report.attr[muldiv_report.numAttr].dataType = pAttrEntry->type;
-                            muldiv_report.numAttr++;
-                        }
-                        if (muldiv_report.numAttr) {
-//                            printf("report power, counter_power_multdiv: %d\r\n", counter_power_multdiv);
-                            zcl_sendReportAttrsCmd(endpoint, &dstEpInfo, TRUE, ZCL_FRAME_SERVER_CLIENT_DIR, clusterID, (zclReportCmd_t* )&muldiv_report);
-                        }
-                    } else {
-                        if (counter_power_multdiv == 10) {
-                            counter_power_multdiv = 0;
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-}
-
-
 
 /*********************************************************************
  * @fn      zcl_reportCfgInfoEntryClear
@@ -652,9 +500,6 @@ _CODE_ZCL_ void reportAttrs(void) {
 
             dstEpInfo.dstAddrMode = APS_DSTADDR_EP_NOTPRESETNT;
             dstEpInfo.profileId = profileID;
-
-//            printf("Test\r\n");
-            report_divisor_multiplier(endpoint, clusterID, profileID, (zclReportCmd_t*)&report);
 
             zcl_sendReportAttrsCmd(endpoint, &dstEpInfo, TRUE, ZCL_FRAME_SERVER_CLIENT_DIR, clusterID, (zclReportCmd_t* )&report);
         }
