@@ -9,8 +9,6 @@ typedef struct __attribute__((packed)) {
     uint8_t  switchType[AMT_RELAY];         // 0x00 - toggle, 0x01 - momentary, 0x02 - multifunction
     uint8_t  switchActions[AMT_RELAY];
     uint8_t  switch_decoupled[AMT_RELAY];
-    uint8_t  ota;
-    uint64_t energy;
     uint8_t  crc;
 } relay_settings_t;
 

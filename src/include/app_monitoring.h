@@ -21,8 +21,19 @@ typedef struct __attribute__((packed)) {
 
 #define PKT_SIZE    sizeof(app_monitoring_t)
 
-void send_uart_commandCb(void *args);
+typedef struct __attribute__((packed)) {
+    uint32_t id;                        /* ID_ENERGY                */
+    uint32_t top;                       /* 0x0 .. 0xFFFFFFFF        */
+    uint32_t flash_addr_start;          /* flash page address start */
+    uint32_t flash_addr_end;            /* flash page address end   */
+    uint64_t energy;
+    uint8_t     crc;
+} energy_cons_t;
+
+//void send_uart_commandCb(void *args);
 int32_t app_monitoringCb(void *arg);
 void monitoring_handler();
+void energy_restore();
+void energy_save();
 
 #endif /* SRC_INCLUDE_APP_MONITORING_H_ */

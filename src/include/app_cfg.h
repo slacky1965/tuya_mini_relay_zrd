@@ -66,7 +66,7 @@ extern "C" {
 #define DEBUG_SAVE	                    ON
 #define DEBUG_BUTTON                    ON
 #define DEBUG_SWITCH                    ON
-#define DEBUG_CONFIG                    ON
+#define DEBUG_MONITORING                OFF
 #define DEBUG_ONOFF                     ON
 #define DEBUG_TIME                      OFF
 #define DEBUG_REPORTING                 OFF
@@ -121,26 +121,14 @@ extern "C" {
         0x100000 End Flash
      */
 //    #define OTA_ADDRESS                 0x70000 // 0x77000 address rewriting for Tuya bootloader
+    #define FW_DATA_SIZE                0x35000                                 // max size of firmware
+    #define BEGIN_USER_DATA             (FLASH_ADDR_OF_APP_FW + FW_DATA_SIZE)   // begin address for saving energy
+    #define USER_DATA_SIZE              (FLASH_ADDR_OF_OTA_IMAGE - BEGIN_USER_DATA)
+    #define END_USER_DATA               (BEGIN_USER_DATA + USER_DATA_SIZE)
 #endif
     #define BOARD                       BOARD_TUYA_ZTU
     #define CLOCK_SYS_CLOCK_HZ          48000000
-    /********************* For 512K Flash only (bootloader mode) ********************************/
-    /* Flash map:
-        0x00000 bootloader
-        0x08000 Firmware
-        0x39000 OTA Image
-        0x6A000 NV_1
-        0x76000 MAC address
-        0x77000 F_Cfg_Info
-        0x78000 U_Cfg_Info
-        0x7A000 NV_2
-        0x80000 End Flash
-     */
-//    #define FLASH_ADDR_OF_OTA_IMAGE     (FLASH_ADDR_OF_APP_FW + FLASH_OTA_IMAGE_MAX_SIZE - 0x7000)
-    #define NV_ITEM_APP_USER_CFG        (NV_ITEM_APP_GP_TRANS_TABLE + 1)    // see sdk/proj/drivers/drv_nv.h
-    #define USER_DATA_SIZE              0x6F000
-    #define BEGIN_USER_DATA             FLASH_ADDR_OF_OTA_IMAGE
-    #define END_USER_DATA               (BEGIN_USER_DATA + USER_DATA_SIZE)
+    #define NV_ITEM_APP_USER_CFG        (NV_ITEM_APP_GP_TRANS_TABLE + 1)        // see sdk/proj/drivers/drv_nv.h
 
 #elif defined(MCU_CORE_8278)
     #define FLASH_CAP_SIZE_1M           1

@@ -116,11 +116,15 @@ extern zcl_sceneAttr_t              g_zcl_sceneAttrs[];
 extern zcl_onOffAttr_t              g_zcl_onOffAttrs[];
 extern zcl_onOffCfgAttr_t           g_zcl_onOffCfgAttrs[];
 extern zcl_msInputAttr_t            g_zcl_msInputAttrs[];
+extern zcl_seAttr_t                 g_zcl_seAttrs;
+extern zcl_msAttr_t                 g_zcl_msAttrs;
 
 #define zcl_groupAttrsGet()         g_zcl_groupAttrs
 #define zcl_sceneAttrGet()          g_zcl_sceneAttrs
 #define zcl_onOffAttrsGet()         g_zcl_onOffAttrs;
 #define zcl_onOffCfgAttrsGet()      g_zcl_onOffCfgAttrs;
 #define zcl_msInputAttrsGet()       g_zcl_msInputAttrs;
+#define zcl_seAttrsGet()            &g_zcl_seAttrs;
+#define zcl_msAttrsGet()            &g_zcl_msAttrs;
 
 #endif /* SRC_INCLUDE_APP_ENDPOINT_CFG_H_ */

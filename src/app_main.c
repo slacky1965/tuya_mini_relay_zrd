@@ -102,6 +102,7 @@ void user_app_init(void)
 
 	start_message();
 	relay_settings_restore();
+	energy_restore();
 
 	/* Register ZCL specific cluster information */
     zcl_register(APP_ENDPOINT1, APP_CB_CLUSTER_NUM1, (zcl_specClusterInfo_t *)g_appClusterList1);
@@ -129,6 +130,9 @@ void user_app_init(void)
     TL_ZB_TIMER_SCHEDULE(app_monitoringCb, NULL, TIMEOUT_1SEC);
 
 //    printf("FLASH_ADDR_OF_OTA_IMAGE: 0x%08x\r\n", FLASH_ADDR_OF_OTA_IMAGE);
+//    printf("BEGIN_USER_DATA: 0x%x\r\n", BEGIN_USER_DATA);
+//    printf("END_USER_DATA:   0x%x\r\n", END_USER_DATA);
+//    printf("USER_DATA_SIZE:  0x%x\r\n", USER_DATA_SIZE);
 }
 
 void app_task(void) {

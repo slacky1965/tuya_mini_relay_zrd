@@ -63,6 +63,7 @@ static void print_setting_sr(nv_sts_t st, relay_settings_t *relay_settings_tmp, 
 //    printf("switchType2:        0x%02x\r\n", relay_settings_tmp->switchType[1]);
     printf("switch_decoupled1:  0x%02x\r\n", relay_settings_tmp->switch_decoupled[0]);
 //    printf("switch_decoupled2:  0x%02x\r\n", relay_settings_tmp->switch_decoupled[1]);
+
 #endif
 }
 
@@ -118,8 +119,6 @@ nv_sts_t relay_settings_restore() {
 //        relay_settings_tmp.switchType[1] = ZCL_SWITCH_TYPE_MOMENTARY;
         relay_settings_tmp.switch_decoupled[0] = CUSTOM_SWITCH_DECOUPLED_OFF;
 //        relay_settings_tmp.switch_decoupled[1] = CUSTOM_SWITCH_DECOUPLED_OFF;
-        relay_settings_tmp.ota = false;
-        relay_settings_tmp.energy = 0;
     }
 
     memcpy(&relay_settings, &relay_settings_tmp, (sizeof(relay_settings_t)));

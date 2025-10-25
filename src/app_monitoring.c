@@ -6,12 +6,22 @@
 #define BL0942_CURRENT_REF      251213.46469622
 #define BL0942_ENERGY_REF       3304.61127328
 
-static uint8_t pkt_out[2] = {0x58, 0xAA};
-static uint8_t pkt_in[PKT_SIZE] = {0};
-//static uint32_t current_adc, voltage_adc, power_adc, freq_adc, energy_adc;
+#define ID_ENERGY               0x0FED1410
+#define TOP_MASK                0xFFFFFFFF
+
+static uint8_t  pkt_out[2] = {0x58, 0xAA};
+static uint8_t  pkt_in[PKT_SIZE] = {0};
 static uint16_t current, voltage, freq;
 static int16_t  power;
-static uint64_t tariff_summ;
+static uint64_t cur_sum_delivered;
+static uint32_t new_energy, old_energy = 0;
+static uint8_t  default_energy_cons = false;
+static uint8_t  first_start = true;
+static energy_cons_t energy_cons = {0};
+
+//static uint32_t energy_addr_start = BEGIN_USER_DATA;
+//static uint32_t energy_addr_end = END_USER_DATA;
+
 
 #if UART_PRINTF_MODE && DEBUG_PACKAGE
 void static print_package(uint8_t *head, uint8_t *buff, size_t len) {
@@ -42,7 +52,7 @@ static uint8_t checksum(uint8_t *data, uint16_t length) {
 
     uint8_t crc8 = 0;
 
-    for(uint8_t i = 0; i < length; i++) {
+    for(uint8_t i = 0; i < (length - 1); i++) {
         crc8 += data[i];
     }
 
@@ -51,7 +61,7 @@ static uint8_t checksum(uint8_t *data, uint16_t length) {
     return ~crc8;
 }
 
-void send_uart_commandCb(void *args) {
+static void send_uart_commandCb(void *args) {
 
     uint8_t buff_len = sizeof(pkt_out), len = 0;
 
@@ -83,6 +93,27 @@ void send_uart_commandCb(void *args) {
 
 //    return len;
 }
+
+static void clear_user_data(uint32_t flash_addr) {
+
+    uint32_t flash_data_size = flash_addr + USER_DATA_SIZE;
+
+    while(flash_addr < flash_data_size) {
+        flash_erase_sector(flash_addr);
+        flash_addr += FLASH_SECTOR_SIZE;
+    }
+}
+
+static void init_default_energy_cons() {
+    memset(&energy_cons, 0, sizeof(energy_cons_t));
+    energy_cons.id = ID_ENERGY;
+    energy_cons.flash_addr_start = BEGIN_USER_DATA;
+    energy_cons.flash_addr_end = END_USER_DATA;
+    g_zcl_seAttrs.cur_sum_delivered = 0;
+    default_energy_cons = true;
+    energy_save();
+}
+
 
 int32_t app_monitoringCb(void *arg) {
 
@@ -135,37 +166,125 @@ void monitoring_handler() {
         }
 
         if (complete) {
-            if (checksum(pkt_in, PKT_SIZE-1) == pkt->crc) {
-//                current_adc = 0x00000000 | (uint32_t)pkt->i_rms_2 << 16 | (uint32_t)pkt->i_rms_1 << 8 | (uint32_t)pkt->i_rms_0;
-//                voltage_adc = 0x00000000 | (uint32_t)pkt->v_rms_2 << 16 | (uint32_t)pkt->v_rms_1 << 8 | (uint32_t)pkt->v_rms_0;
-//                power_adc = 0x00000000 | (uint32_t)pkt->watt_2 << 16 | (uint32_t)pkt->watt_1 << 8 | (uint32_t)pkt->watt_0;
-//                freq_adc = 0x00000000 | (uint32_t)pkt->freq_2 << 16 | (uint32_t)pkt->freq_1 << 8 | (uint32_t)pkt->freq_0;
-//                energy_adc = 0x00000000 | (uint32_t)pkt->cf_cnt_2 << 16 | (uint32_t)pkt->cf_cnt_1 << 8 | (uint32_t)pkt->cf_cnt_0;
-
+            if (checksum(pkt_in, PKT_SIZE) == pkt->crc) {
                 current = (uint16_t)((float)(pkt->i_rms/BL0942_CURRENT_REF*100.0));
                 voltage = (uint16_t)((float)(pkt->v_rms/BL0942_VOLTAGE_REF*100.0));
                 power = (uint16_t)((float)(pkt->watt/BL0942_POWER_REF*100.0));
                 freq = (uint16_t)((float)(1000000.0/pkt->freq*100.0));
-                tariff_summ = (uint64_t)((float)(pkt->cf_cnt/BL0942_ENERGY_REF*1000.0));
+                new_energy = (uint32_t)((float)(pkt->cf_cnt/BL0942_ENERGY_REF*100.0));
 
-//                printf("current_adc: %d, current: %d\r\n", current_adc, current);
-//                printf("voltage_adc: %d, voltage: %d\r\n", voltage_adc, voltage);
-//                printf("power_adc: %d, power: %d\r\n", power_adc, power);
-//                printf("freq_adc: %d, freq: %d\r\n", freq_adc, freq);
-//                printf("energy_adc: %d, energy: %d\r\n", energy_adc, tariff_summ);
-
+#if UART_PRINTF_MODE && DEBUG_MONITORING
                 printf("current_adc: %d,%s current: %d\r\n", pkt->i_rms, pkt->i_rms > 9?"\t":"\t\t", current);
                 printf("voltage_adc: %d,%s voltage: %d\r\n", pkt->v_rms, pkt->v_rms > 9?"\t":"\t\t", voltage);
                 printf("power_adc:   %d,%s power:   %d\r\n", pkt->watt, pkt->watt > 9?"\t":"\t\t", power);
                 printf("freq_adc:    %d,%s freq:    %d\r\n", pkt->freq, pkt->freq > 9?"\t":"\t\t", freq);
-                printf("energy_adc:  %d,%s energy:  %d\r\n", pkt->cf_cnt, pkt->cf_cnt > 9?"\t":"\t\t", tariff_summ);
+                printf("energy_adc:  %d,%s energy:  %d\r\n", pkt->cf_cnt, pkt->cf_cnt > 9?"\t":"\t\t", new_energy);
+                printf("new_energy:  %d,%s old_en:  %d\r\n", new_energy, new_energy > 9?"\t":"\t\t", old_energy);
+#endif
+                if (first_start) {
+#if UART_PRINTF_MODE && DEBUG_MONITORING
+                    printf("first start\r\n");
+#endif
+                    first_start = false;
+                    old_energy = new_energy;
+                    return;
+                }
 
                 zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_MS_ELECTRICAL_MEASUREMENT, ZCL_ATTRID_RMS_VOLTAGE, (uint8_t*)&voltage);
                 zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_MS_ELECTRICAL_MEASUREMENT, ZCL_ATTRID_RMS_CURRENT, (uint8_t*)&current);
                 zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_MS_ELECTRICAL_MEASUREMENT, ZCL_ATTRID_ACTIVE_POWER, (uint8_t*)&power);
                 zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_MS_ELECTRICAL_MEASUREMENT, ZCL_ATTRID_AC_FREQUENCY, (uint8_t*)&freq);
-                zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_SE_METERING, ZCL_ATTRID_CURRENT_SUMMATION_DELIVERD, (uint8_t*)&tariff_summ);
+
+                if (new_energy > old_energy) {
+//                    printf("new_energy: %d > old_energy: %d\r\n", new_energy, old_energy);
+                    cur_sum_delivered = energy_cons.energy + (new_energy - old_energy);
+                    old_energy = new_energy;
+                    energy_cons.energy = cur_sum_delivered;
+                    energy_save();
+                    zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_SE_METERING, ZCL_ATTRID_CURRENT_SUMMATION_DELIVERD, (uint8_t*)&cur_sum_delivered);
+                }
             }
         }
+    }
+}
+
+void energy_restore() {
+
+    energy_cons_t energy_curr, energy_next;
+    uint8_t find_config = false;
+
+    uint32_t flash_addr = BEGIN_USER_DATA;
+
+    flash_read_page(flash_addr, sizeof(energy_cons_t), (uint8_t*)&energy_curr);
+
+    if (energy_curr.id != ID_ENERGY || checksum((uint8_t*)&energy_curr, sizeof(energy_cons_t)) != energy_curr.crc) {
+#if UART_PRINTF_MODE && DEBUG_SAVE
+        printf("No saved energy_cons! Init.\r\n");
+#endif /* UART_PRINTF_MODE */
+        clear_user_data(BEGIN_USER_DATA);
+        init_default_energy_cons();
+        return;
+    }
+
+    flash_addr += FLASH_PAGE_SIZE;
+
+    while(flash_addr < END_USER_DATA) {
+        flash_read_page(flash_addr, sizeof(energy_cons_t), (uint8_t*)&energy_next);
+        if (energy_next.id == ID_ENERGY && checksum((uint8_t*)&energy_next, sizeof(energy_cons_t)) == energy_next.crc) {
+            if ((energy_curr.top + 1) == energy_next.top || (energy_curr.top == TOP_MASK && energy_next.top == 0)) {
+                memcpy(&energy_curr, &energy_next, sizeof(energy_cons_t));
+                flash_addr += FLASH_PAGE_SIZE;
+                continue;
+            }
+            find_config = true;
+            break;
+        }
+        find_config = true;
+        break;
+    }
+
+    if (find_config) {
+        memcpy(&energy_cons, &energy_curr, sizeof(energy_cons_t));
+        energy_cons.flash_addr_start = flash_addr-FLASH_PAGE_SIZE;
+        g_zcl_seAttrs.cur_sum_delivered = energy_cons.energy;
+#if UART_PRINTF_MODE && DEBUG_SAVE
+        printf("Read config from flash address - 0x%x\r\n", energy_cons.flash_addr_start);
+#endif /* UART_PRINTF_MODE */
+    } else {
+#if UART_PRINTF_MODE && DEBUG_SAVE
+        printf("No active saved energy_cons! Reinit.\r\n");
+#endif /* UART_PRINTF_MODE */
+        clear_user_data(BEGIN_USER_DATA);
+        init_default_energy_cons();
+    }
+
+}
+
+void energy_save() {
+
+    if (default_energy_cons) {
+        energy_cons.crc = checksum((uint8_t*)&(energy_cons), sizeof(energy_cons_t));
+        flash_erase(energy_cons.flash_addr_start);
+        flash_write(energy_cons.flash_addr_start, sizeof(energy_cons_t), (uint8_t*)&(energy_cons));
+        default_energy_cons = false;
+#if UART_PRINTF_MODE && DEBUG_SAVE
+        printf("Save energy_cons to flash address - 0x%x\r\n", energy_cons.flash_addr_start);
+#endif /* UART_PRINTF_MODE */
+    } else {
+        energy_cons.flash_addr_start += FLASH_PAGE_SIZE;
+        if (energy_cons.flash_addr_start == END_USER_DATA) {
+            energy_cons.flash_addr_start = BEGIN_USER_DATA;
+        }
+        if (energy_cons.flash_addr_start % FLASH_SECTOR_SIZE == 0) {
+            flash_erase(energy_cons.flash_addr_start);
+        }
+        energy_cons.top++;
+        energy_cons.top &= TOP_MASK;
+        energy_cons.crc = checksum((uint8_t*)&(energy_cons), sizeof(energy_cons_t));
+        flash_write(energy_cons.flash_addr_start, sizeof(energy_cons_t), (uint8_t*)&(energy_cons));
+#if UART_PRINTF_MODE && DEBUG_SAVE
+        printf("Save energy_cons to flash address - 0x%x\r\n", energy_cons.flash_addr_start);
+#endif /* UART_PRINTF_MODE */
+
     }
 }
