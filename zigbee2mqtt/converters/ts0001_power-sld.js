@@ -59,10 +59,10 @@ export default {
     vendor: 'Slacky-DIY',
     description: 'Automatically generated definition',
     extend: [
-//        m.deviceEndpoints({"endpoints":{"1":1}}), 
+        // m.deviceEndpoints({"endpoints":{"1":1}}), 
         m.onOff({"powerOnBehavior":true}), 
         m.commandsOnOff(),
-//        localActionExtend({"endpointNames":["1"]}),
+        // localActionExtend({"endpointNames":["1"]}),
         localActionExtend(),
         m.enumLookup({
             name: "switch_actions",
@@ -88,7 +88,7 @@ export default {
           current: {"divisor": 100}, 
           voltage: {"divisor": 100}, 
           power: {"divisor": 100}, 
-          energy: {"divisor": 1000},
+          energy: {"divisor": 100},
           acFrequency: {"divisor": 100}
         }), 
         // m.commandsOnOff()
