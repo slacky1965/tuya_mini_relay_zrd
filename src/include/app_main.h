@@ -3,10 +3,13 @@
 
 #include "tl_common.h"
 #include "zcl_include.h"
+#include "general/zcl_multistate_input.h"
 #include "bdb.h"
 #include "ota.h"
 #include "gp.h"
 
+
+#include "app_relay.h"
 #include "app_onoff.h"
 #include "app_switch.h"
 #include "app_bootloader.h"
@@ -16,7 +19,6 @@
 #include "app_button.h"
 #include "app_led.h"
 #include "app_utility.h"
-#include "app_relay.h"
 #include "app_uart.h"
 #include "app_monitoring.h"
 
@@ -58,6 +60,7 @@ status_t app_identifyCb(zclIncomingAddrInfo_t *pAddrInfo, uint8_t cmdId, void *c
 status_t app_sceneCb(zclIncomingAddrInfo_t *pAddrInfo, uint8_t cmdId, void *cmdPayload);
 status_t app_timeCb(zclIncomingAddrInfo_t *pAddrInfo, uint8_t cmdId, void *cmdPayload);
 status_t app_onOffCb(zclIncomingAddrInfo_t *pAddrInfo, u8 cmdId, void *cmdPayload);
+status_t app_msInputCb(zclIncomingAddrInfo_t *pAddrInfo, uint8_t cmdId, void *cmdPayload);
 status_t app_meteringCb(zclIncomingAddrInfo_t *pAddrInfo, uint8_t cmdId, void *cmdPayload);
 
 void app_leaveCnfHandler(nlme_leave_cnf_t *pLeaveCnf);

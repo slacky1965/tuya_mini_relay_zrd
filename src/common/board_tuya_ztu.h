@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 /************************* Configure SWITCH GPIO ***************************************/
-#define SWITCH_GPIO             GPIO_PD2
+#define SWITCH1_GPIO            GPIO_PD2
 #define PD2_INPUT_ENABLE        ON
 //#define PD2_DATA_OUT            OFF
 #define PD2_OUTPUT_ENABLE       OFF
@@ -66,7 +66,7 @@ enum {
 #define RELAY_ON                1
 #define RELAY_OFF               0
 
-#define RELAY_GPIO              GPIO_PC3
+#define RELAY1_GPIO             GPIO_PC3
 #define PC3_FUNC                AS_GPIO
 #define PC3_OUTPUT_ENABLE       ON
 #define PC3_INPUT_ENABLE        ON

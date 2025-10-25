@@ -36,14 +36,15 @@ extern "C" {
     #define MCU_CORE_8258       1
 #endif
 
-#define MY_RF_POWER_INDEX   RF_POWER_INDEX_P10p46dBm
-
 #define ON                      1
 #define OFF                     0
 
 /* for reporting */
 #define REPORTING_MIN       60              /* 1 min            */
 #define REPORTING_MAX       300             /* 5 min            */
+
+#define MY_RF_POWER_INDEX   RF_POWER_INDEX_P10p46dBm
+
 
 /**********************************************************************
  * Product Information
@@ -65,8 +66,7 @@ extern "C" {
 #define DEBUG_SAVE	                    ON
 #define DEBUG_BUTTON                    ON
 #define DEBUG_SWITCH                    ON
-#define DEBUG_PACKAGE                   OFF
-#define DEBUG_CONFIG                    OFF
+#define DEBUG_CONFIG                    ON
 #define DEBUG_ONOFF                     ON
 #define DEBUG_TIME                      OFF
 #define DEBUG_REPORTING                 OFF
@@ -96,7 +96,7 @@ extern "C" {
 #define BOARD_8278_DONGLE               7
 #define BOARD_B91_EVK                   8
 #define BOARD_B91_DONGLE                9
-#define BOARD_TUYA_ZTU	             	10
+#define BOARD_TUYA_ZTU                  10
 
 /* Board define */
 #if defined(MCU_CORE_826x)
@@ -220,9 +220,9 @@ extern "C" {
 #define ZCL_ON_OFF_SWITCH_CFG_SUPPORT               ON
 #define ZCL_OTA_SUPPORT                             ON
 #define ZCL_GP_SUPPORT                              ON
-//#define ZCL_TIME_SUPPORT                            ON
 #define ZCL_METERING_SUPPORT                        ON
 #define ZCL_ELECTRICAL_MEASUREMENT_SUPPORT          ON
+#define ZCL_MULTISTATE_INPUT_SUPPORT                ON
 #if TOUCHLINK_SUPPORT
 #define ZCL_ZLL_COMMISSIONING_SUPPORT               ON
 #endif

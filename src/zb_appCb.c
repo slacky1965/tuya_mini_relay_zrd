@@ -290,7 +290,19 @@ void app_leaveCnfHandler(nlme_leave_cnf_t *pLeaveCnf)
 
         zb_deviceFactoryNewSet(true);
 
-        bdb_networkSteerStart();
+        heartInterval = 500;
+
+#if (!ZBHCI_EN)
+        uint16_t jitter = 0;
+        do {
+            jitter = zb_random() % 0x0fff;
+        } while (jitter == 0);
+
+        if (steerTimerEvt) {
+            TL_ZB_TIMER_CANCEL(&steerTimerEvt);
+        }
+        steerTimerEvt = TL_ZB_TIMER_SCHEDULE(app_bdbNetworkSteerStart, NULL, jitter);
+#endif
 
         if (!g_appCtx.net_steer_start) light_blink_start(90, 250, 750);
     }

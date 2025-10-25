@@ -27,6 +27,11 @@
  * INCLUDES
  */
 #include "zcl_include.h"
+#include "general/zcl_multistate_input.h"
+
+#include "app_relay.h"
+#include "app_reporting.h"
+#include "app_utility.h"
 
 #define BUILD_U48(b0, b1, b2, b3, b4, b5)   ( (uint64_t)((((uint64_t)(b5) & 0x0000000000ff) << 40) + (((uint64_t)(b4) & 0x0000000000ff) << 32) + (((uint64_t)(b3) & 0x0000000000ff) << 24) + (((uint64_t)(b2) & 0x0000000000ff) << 16) + (((uint64_t)(b1) & 0x0000000000ff) << 8) + ((uint64_t)(b0) & 0x00000000FF)) )
 
@@ -43,6 +48,7 @@ ev_timer_event_t *reportAttrTimerEvt = NULL;
 /**********************************************************************
  * FUNCTIONS
  */
+
 
 /*********************************************************************
  * @fn      zcl_reportCfgInfoEntryClear
@@ -495,13 +501,25 @@ _CODE_ZCL_ void reportAttrs(void) {
         }
 
         if (clusterID != 0xFFFF) {
+            uint8_t i = endpoint - 1;
             epInfo_t dstEpInfo;
             TL_SETSTRUCTCONTENT(dstEpInfo, 0);
 
             dstEpInfo.dstAddrMode = APS_DSTADDR_EP_NOTPRESETNT;
             dstEpInfo.profileId = profileID;
 
-            zcl_sendReportAttrsCmd(endpoint, &dstEpInfo, TRUE, ZCL_FRAME_SERVER_CLIENT_DIR, clusterID, (zclReportCmd_t* )&report);
+            if (report.attr[0].attrID == ZCL_MULTISTATE_INPUT_ATTRID_PRESENT_VALUE &&
+                    !clock_time_exceed(last_timeReportMsi[i], TIMEOUT_TICK_250MS)) {
+
+                zcl_reportAttrs(endpoint, &dstEpInfo, TRUE, ZCL_FRAME_SERVER_CLIENT_DIR, last_seqNum[i],
+                        MANUFACTURER_CODE_NONE, clusterID, (zclReportCmd_t* )&report);
+
+//                printf("zcl_report. msi 0x%04x repeat. seqNum: %d\r\n", clusterID, last_seqNum[i]);
+
+            } else {
+//                printf("zcl_report. clusterId: 0x%04x\r\n", clusterID);
+                zcl_sendReportAttrsCmd(endpoint, &dstEpInfo, TRUE, ZCL_FRAME_SERVER_CLIENT_DIR, clusterID, (zclReportCmd_t* )&report);
+            }
         }
     } while (again);
 }

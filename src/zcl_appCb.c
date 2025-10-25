@@ -46,7 +46,7 @@
 static void app_zclReadRspCmd(zclReadRspCmd_t *pReadRspCmd);
 #endif
 #ifdef ZCL_WRITE
-static void app_zclWriteReqCmd(uint16_t clusterId, zclWriteCmd_t *pWriteReqCmd);
+static void app_zclWriteReqCmd(uint8_t epId, uint16_t clusterId, zclWriteCmd_t *pWriteReqCmd);
 static void app_zclWriteRspCmd(zclWriteRspCmd_t *pWriteRspCmd);
 #endif
 #ifdef ZCL_REPORT
@@ -102,7 +102,7 @@ void app_zclProcessIncomingMsg(zclIncoming_t *pInHdlrMsg)
 #endif
 #ifdef ZCL_WRITE
         case ZCL_CMD_WRITE:
-            app_zclWriteReqCmd(pInHdlrMsg->msg->indInfo.cluster_id, pInHdlrMsg->attrCmd);
+            app_zclWriteReqCmd(endPoint, pInHdlrMsg->msg->indInfo.cluster_id, pInHdlrMsg->attrCmd);
             break;
         case ZCL_CMD_WRITE_RSP:
             app_zclWriteRspCmd(pInHdlrMsg->attrCmd);
@@ -143,7 +143,7 @@ static void app_zclReadRspCmd(zclReadRspCmd_t *pReadRspCmd) {
     uint8_t numAttr = pReadRspCmd->numAttr;
     zclReadRspStatus_t *attrList = pReadRspCmd->attrList;
     uint32_t time_local;
-//    bool time_sent = false;
+    bool time_sent = false;
 
     for (uint8_t i = 0; i < numAttr; i++) {
         if (attrList[i].attrID == ZCL_ATTRID_LOCAL_TIME && attrList[i].status == ZCL_STA_SUCCESS) {
@@ -152,16 +152,16 @@ static void app_zclReadRspCmd(zclReadRspCmd_t *pReadRspCmd) {
             time_local |= (attrList[i].data[2] << 16) & 0x00ffffff;
             time_local |= (attrList[i].data[3] << 24) & 0xffffffff;
             zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_GEN_TIME, ZCL_ATTRID_LOCAL_TIME, (uint8_t*)&time_local);
-//            time_sent = true;
+            time_sent = true;
 #if UART_PRINTF_MODE && DEBUG_TIME
             printf("Sync Local Time: %d\r\n", time_local+UNIX_TIME_CONST);
 #endif
         }
     }
 
-//    if (time_sent) {
+    if (time_sent) {
 //        set_time_sent();
-//    }
+    }
 }
 #endif
 
@@ -175,12 +175,15 @@ static void app_zclReadRspCmd(zclReadRspCmd_t *pReadRspCmd) {
  *
  * @return  None
  */
-static void app_zclWriteReqCmd(uint16_t clusterId, zclWriteCmd_t *pWriteReqCmd)
+static void app_zclWriteReqCmd(uint8_t epId, uint16_t clusterId, zclWriteCmd_t *pWriteReqCmd)
 {
 
     uint8_t numAttr = pWriteReqCmd->numAttr;
     zclWriteRec_t *attr = pWriteReqCmd->attrList;
     bool save = false;
+    uint8_t idx = epId - 1;
+    zcl_onOffCfgAttr_t *pOnOffCfg = zcl_onOffCfgAttrsGet();
+    pOnOffCfg += idx;
 
 //    printf("app_zclWriteReqCmd\r\n");
 
@@ -188,8 +191,8 @@ static void app_zclWriteReqCmd(uint16_t clusterId, zclWriteCmd_t *pWriteReqCmd)
         for (uint32_t i = 0; i < numAttr; i++) {
             if (attr[i].attrID == ZCL_ATTRID_START_UP_ONOFF) {
                 uint8_t startup = attr[i].attrData[0];
-                printf("startup: 0x%02x\r\n", startup);
-                relay_settings.startUpOnOff = startup;
+//                printf("startup: 0x%02x, ep: %d\r\n", startup, epId);
+                relay_settings.startUpOnOff[idx] = startup;
                 save = true;
             }
         }
@@ -197,14 +200,30 @@ static void app_zclWriteReqCmd(uint16_t clusterId, zclWriteCmd_t *pWriteReqCmd)
         for (uint32_t i = 0; i < numAttr; i++) {
             if (attr[i].attrID == CUSTOM_ATTRID_SWITCH_TYPE) {
                 uint8_t type = attr[i].attrData[0];
-                printf("type: 0x%02x\r\n", type);
-                relay_settings.switchType = type;
-                g_zcl_onOffCfgAttrs.switchType = type;
+//                printf("type: 0x%02x\r\n", type);
+                relay_settings.switchType[idx] = type;
+                pOnOffCfg->switchType = type;
+                if (type == ZCL_SWITCH_TYPE_MULTIFUNCTION) {
+                    cmdOnOff_off(epId);
+                    relay_settings.switch_decoupled[idx] = CUSTOM_SWITCH_DECOUPLED_ON;
+                    pOnOffCfg->custom_decoupled = CUSTOM_SWITCH_DECOUPLED_ON;
+                }
                 save = true;
             } else if (attr[i].attrID == ZCL_ATTRID_SWITCH_ACTION) {
                 uint8_t action = attr[i].attrData[0];
-                printf("action: 0x%02x\r\n", action);
-                relay_settings.switchActions = action;
+//                printf("action: 0x%02x, ep: %d\r\n", action, epId);
+                relay_settings.switchActions[idx] = action;
+                save = true;
+            } else if (attr[i].attrID == CUSTOM_ATTRID_DECOUPLED) {
+                uint8_t decoupled = attr[i].attrData[0];
+//                printf("decoupled: 0x%02x\r\n", decoupled);
+                cmdOnOff_off(epId);
+                if (decoupled == CUSTOM_SWITCH_DECOUPLED_OFF && relay_settings.switchType[idx] == ZCL_SWITCH_TYPE_MULTIFUNCTION) {
+                    decoupled = CUSTOM_SWITCH_DECOUPLED_ON;
+                    pOnOffCfg->custom_decoupled = decoupled;
+//                    app_forcedReport(epId, clusterId, CUSTOM_ATTRID_DECOUPLED);
+                }
+                relay_settings.switch_decoupled[idx] = decoupled;
                 save = true;
             }
         }
@@ -792,47 +811,66 @@ int32_t getTimeCb(void *arg) {
 
 status_t app_onOffCb(zclIncomingAddrInfo_t *pAddrInfo, u8 cmdId, void *cmdPayload) {
 
-    printf("app_onOffCb, dstEp: %d\r\n", pAddrInfo->dstEp);
+//    printf("app_onOffCb, dstEp: %d\r\n", pAddrInfo->dstEp);
 
     zcl_onOffAttr_t *pOnOff = zcl_onOffAttrsGet();
+    pOnOff += pAddrInfo->dstEp - 1;
 
-    if(pAddrInfo->dstEp == APP_ENDPOINT1) {
-        switch(cmdId){
-            case ZCL_CMD_ONOFF_ON:
-                printf("pAddrInfo->dstEp: %d, cmd on\r\n", pAddrInfo->dstEp);
-                cmdOnOff_on(pAddrInfo->dstEp);
-                break;
-            case ZCL_CMD_ONOFF_OFF:
-                printf("pAddrInfo->dstEp: %d, cmd off\r\n", pAddrInfo->dstEp);
-                cmdOnOff_off(pAddrInfo->dstEp);
-                break;
-            case ZCL_CMD_ONOFF_TOGGLE:
-                printf("pAddrInfo->dstEp: %d, cmd toggle\r\n", pAddrInfo->dstEp);
-                cmdOnOff_toggle(pAddrInfo->dstEp);
-                break;
-//            case ZCL_CMD_OFF_WITH_EFFECT:
-//                if(pOnOff->globalSceneControl == TRUE){
-//                    /* TODO: store its settings in its global scene */
+    if(pAddrInfo->dstEp == APP_ENDPOINT1 || pAddrInfo->dstEp == APP_ENDPOINT2) {
+#if 0
+        if (relay_settings.switchType[pAddrInfo->dstEp-1] != ZCL_SWITCH_TYPE_MULTIFUNCTION) {
+#endif
+            switch(cmdId){
+                case ZCL_CMD_ONOFF_ON:
+                    printf("pAddrInfo->dstEp: %d, cmd on\r\n", pAddrInfo->dstEp);
+                    cmdOnOff_on(pAddrInfo->dstEp);
+                    break;
+                case ZCL_CMD_ONOFF_OFF:
+                    printf("pAddrInfo->dstEp: %d, cmd off\r\n", pAddrInfo->dstEp);
+                    cmdOnOff_off(pAddrInfo->dstEp);
+                    break;
+                case ZCL_CMD_ONOFF_TOGGLE:
+                    printf("pAddrInfo->dstEp: %d, cmd toggle\r\n", pAddrInfo->dstEp);
+                    cmdOnOff_toggle(pAddrInfo->dstEp);
+                    break;
+//                case ZCL_CMD_OFF_WITH_EFFECT:
+//                    if(pOnOff->globalSceneControl == TRUE){
+//                        /* TODO: store its settings in its global scene */
 //
-//                    pOnOff->globalSceneControl = FALSE;
-//                }
-//                sampleLight_onoff_offWithEffectProcess((zcl_onoff_offWithEffectCmd_t *)cmdPayload);
-//                break;
-            case ZCL_CMD_ON_WITH_RECALL_GLOBAL_SCENE:
-                if(pOnOff->globalSceneControl == FALSE){
-//                    app_onoff_onWithRecallGlobalSceneProcess();
-                    pOnOff->globalSceneControl = TRUE;
-                }
-                break;
-//            case ZCL_CMD_ON_WITH_TIMED_OFF:
-//                sampleLight_onoff_onWithTimedOffProcess((zcl_onoff_onWithTimeOffCmd_t *)cmdPayload);
-//                break;
-            default:
-                break;
+//                        pOnOff->globalSceneControl = FALSE;
+//                    }
+//                    sampleLight_onoff_offWithEffectProcess((zcl_onoff_offWithEffectCmd_t *)cmdPayload);
+//                    break;
+                case ZCL_CMD_ON_WITH_RECALL_GLOBAL_SCENE:
+                    if(pOnOff->globalSceneControl == FALSE){
+//                        app_onoff_onWithRecallGlobalSceneProcess();
+                        pOnOff->globalSceneControl = TRUE;
+                    }
+                    break;
+//                case ZCL_CMD_ON_WITH_TIMED_OFF:
+//                    sampleLight_onoff_onWithTimedOffProcess((zcl_onoff_onWithTimeOffCmd_t *)cmdPayload);
+//                    break;
+                default:
+                    break;
+            }
+#if 0
+        } else {
+            printf("pAddrInfo->dstEp: %d, cmd off\r\n", pAddrInfo->dstEp);
+            cmdOnOff_off(pAddrInfo->dstEp);
         }
+#endif
     }
 
     return ZCL_STA_SUCCESS;
+}
+
+status_t app_msInputCb(zclIncomingAddrInfo_t *pAddrInfo, uint8_t cmdId, void *cmdPayload) {
+
+//    printf("app_aInputCb(). pAddrInfo->dirCluster: %0x%x, cmdId: 0x%x\r\n", pAddrInfo->dirCluster, cmdId);
+
+    status_t status = ZCL_STA_SUCCESS;
+
+    return status;
 }
 
 /*********************************************************************

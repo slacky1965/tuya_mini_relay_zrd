@@ -70,7 +70,18 @@ typedef struct {
     uint8_t switchType;
     uint8_t switchActions;
     uint8_t custom_swtichType; // custom RW
+    uint8_t custom_decoupled;
 } zcl_onOffCfgAttr_t;
+
+/**
+ *  @brief Defined for multistate input clusters attributes
+ */
+typedef struct {
+    uint8_t     out_of_service;
+    uint16_t    value;
+    uint16_t    num;
+    uint8_t     status_flag;
+} zcl_msInputAttr_t;
 
 typedef struct {
     uint64_t cur_sum_delivered;
@@ -90,21 +101,26 @@ typedef struct {
     uint16_t power;
 } zcl_msAttr_t;
 
-extern uint8_t APP_CB_CLUSTER_NUM;
-extern const zcl_specClusterInfo_t g_appClusterList[];
-extern const af_simple_descriptor_t app_simpleDesc;
+extern uint8_t APP_CB_CLUSTER_NUM1;
+//extern uint8_t APP_CB_CLUSTER_NUM2;
+extern const zcl_specClusterInfo_t  g_appClusterList1[];
+//extern const zcl_specClusterInfo_t  g_appClusterList2[];
+extern const af_simple_descriptor_t app_ep1_simpleDesc;
+//extern const af_simple_descriptor_t app_ep2_simpleDesc;
 
 /* Attributes */
 extern zcl_basicAttr_t              g_zcl_basicAttrs;
 extern zcl_identifyAttr_t           g_zcl_identifyAttrs;
-extern zcl_groupAttr_t              g_zcl_groupAttrs;
-extern zcl_sceneAttr_t              g_zcl_sceneAttrs;
-extern zcl_onOffAttr_t              g_zcl_onOffAttrs;
-extern zcl_onOffCfgAttr_t           g_zcl_onOffCfgAttrs;
+extern zcl_groupAttr_t              g_zcl_groupAttrs[];
+extern zcl_sceneAttr_t              g_zcl_sceneAttrs[];
+extern zcl_onOffAttr_t              g_zcl_onOffAttrs[];
+extern zcl_onOffCfgAttr_t           g_zcl_onOffCfgAttrs[];
+extern zcl_msInputAttr_t            g_zcl_msInputAttrs[];
 
-#define zcl_groupAttrsGet()         &g_zcl_groupAttrs
-#define zcl_sceneAttrGet()          &g_zcl_sceneAttrs
-#define zcl_onOffAttrsGet()         &g_zcl_onOffAttrs;
-#define zcl_onOffCfgAttrsGet()      &g_zcl_onOffCfgAttrs;
+#define zcl_groupAttrsGet()         g_zcl_groupAttrs
+#define zcl_sceneAttrGet()          g_zcl_sceneAttrs
+#define zcl_onOffAttrsGet()         g_zcl_onOffAttrs;
+#define zcl_onOffCfgAttrsGet()      g_zcl_onOffCfgAttrs;
+#define zcl_msInputAttrsGet()       g_zcl_msInputAttrs;
 
 #endif /* SRC_INCLUDE_APP_ENDPOINT_CFG_H_ */

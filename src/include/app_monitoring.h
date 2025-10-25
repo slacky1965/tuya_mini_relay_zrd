@@ -6,27 +6,16 @@
 
 typedef struct __attribute__((packed)) {
     uint8_t     head;
-    uint8_t     i_rms_0;
-    uint8_t     i_rms_1;
-    uint8_t     i_rms_2;
-    uint8_t     v_rms_0;
-    uint8_t     v_rms_1;
-    uint8_t     v_rms_2;
-    uint8_t     i_fast_rms_0;
-    uint8_t     i_fast_rms_1;
-    uint8_t     i_fast_rms_2;
-    uint8_t     watt_0;
-    uint8_t     watt_1;
-    uint8_t     watt_2;
-    uint8_t     cf_cnt_0;
-    uint8_t     cf_cnt_1;
-    uint8_t     cf_cnt_2;
-    uint8_t     freq_0;
-    uint8_t     freq_1;
-    uint8_t     freq_2;
-    uint8_t     status_0;
-    uint8_t     status_1;
-    uint8_t     status_2;
+    uint32_t    i_rms       :24;
+    uint32_t    v_rms       :24;
+    uint32_t    i_fast_rms  :24;
+    int32_t     watt        :24;
+    uint32_t    cf_cnt      :24;
+    uint16_t    freq;
+    uint8_t     resv1;
+    uint8_t     status;
+    uint8_t     resv2;
+    uint8_t     resv3;
     uint8_t     crc;
 } app_monitoring_t;
 

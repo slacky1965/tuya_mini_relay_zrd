@@ -29,7 +29,7 @@
 
 #define APP_RELEASE                         0x10        //app release 1.0
 #ifndef VERSION_BUILD
-    #define APP_BUILD                       0x01        //app build 01, full version - v1.0.01
+    #define APP_BUILD                       0x03        //app build 03, full version - v1.0.03
 #endif
 #define STACK_RELEASE                       0x30        //stack release 3.0
 #define STACK_BUILD                         0x01        //stack build 01
@@ -84,6 +84,7 @@
  * 0x1A - ElectricityMeter_ABC
  * 0x1B - Test Remote Constol
  * 0x1C - Tuya mini relay control _TZ3000_kqvb5akv
+ * 0x1D - Tuya relay QS-Zigbee-SEC02 _TZ3000_m8f3z8ju
  *
  */
 
