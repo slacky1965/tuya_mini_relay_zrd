@@ -10,4 +10,6 @@
 
 <img src="doc/images/switch_relay.jpg"/>
 
+<img src="doc/images/exposes.jpg"/>
+
 ---
