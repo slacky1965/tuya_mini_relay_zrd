@@ -35,5 +35,6 @@ int32_t app_monitoringCb(void *arg);
 void monitoring_handler();
 void energy_restore();
 void energy_save();
+void energy_remove();
 
 #endif /* SRC_INCLUDE_APP_MONITORING_H_ */

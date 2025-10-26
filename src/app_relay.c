@@ -7,7 +7,7 @@ static uint8_t checksum(uint8_t *data, uint16_t length) {
 
     uint8_t crc8 = 0;
 
-    for(uint8_t i = 0; i < length; i++) {
+    for(uint8_t i = 0; i < (length - 1); i++) {
         crc8 += data[i];
     }
 
@@ -76,7 +76,7 @@ nv_sts_t relay_settings_save() {
     printf("Saved relay settings\r\n");
 #endif
 
-    relay_settings.crc = checksum((uint8_t*)&relay_settings, sizeof(relay_settings_t)-1);
+    relay_settings.crc = checksum((uint8_t*)&relay_settings, sizeof(relay_settings_t));
     st = nv_flashWriteNew(1, NV_MODULE_APP,  NV_ITEM_APP_USER_CFG, sizeof(relay_settings_t), (uint8_t*)&relay_settings);
 
 #else
@@ -95,7 +95,7 @@ nv_sts_t relay_settings_restore() {
 
     st = nv_flashReadNew(1, NV_MODULE_APP,  NV_ITEM_APP_USER_CFG, sizeof(relay_settings_t), (uint8_t*)&relay_settings_tmp);
 
-    if (st == NV_SUCC && relay_settings_tmp.crc == checksum((uint8_t*)&relay_settings_tmp, sizeof(relay_settings_t)-1)) {
+    if (st == NV_SUCC && relay_settings_tmp.crc == checksum((uint8_t*)&relay_settings_tmp, sizeof(relay_settings_t))) {
 
 #if UART_PRINTF_MODE
         printf("Restored relay settings\r\n");
@@ -138,6 +138,33 @@ nv_sts_t relay_settings_restore() {
 #endif
 
     return st;
+}
+
+void relay_settints_default() {
+    relay_settings.startUpOnOff[0] = ZCL_START_UP_ONOFF_SET_ONOFF_TO_OFF;
+//        relay_settings.startUpOnOff[1] = ZCL_START_UP_ONOFF_SET_ONOFF_TO_OFF;
+    relay_settings.status_onoff[0] = ZCL_ONOFF_STATUS_OFF;
+//        relay_settings.status_onoff[1] = ZCL_ONOFF_STATUS_OFF;
+    relay_settings.switchActions[0] = ZCL_SWITCH_ACTION_OFF_ON;
+//        relay_settings.switchActions[1] = ZCL_SWITCH_ACTION_OFF_ON;
+    relay_settings.switchType[0] = ZCL_SWITCH_TYPE_MOMENTARY;
+//        relay_settings.switchType[1] = ZCL_SWITCH_TYPE_MOMENTARY;
+    relay_settings.switch_decoupled[0] = CUSTOM_SWITCH_DECOUPLED_OFF;
+//        relay_settings.switch_decoupled[1] = CUSTOM_SWITCH_DECOUPLED_OFF;
+
+    relay_settings_save();
+
+    g_zcl_onOffAttrs[0].onOff = relay_settings.status_onoff[0];
+//    g_zcl_onOffAttrs[1].onOff = relay_settings.status_onoff[1];
+    g_zcl_onOffAttrs[0].startUpOnOff = relay_settings.startUpOnOff[0];
+//    g_zcl_onOffAttrs[1].startUpOnOff = relay_settings.startUpOnOff[1];
+    g_zcl_onOffCfgAttrs[0].custom_swtichType = g_zcl_onOffCfgAttrs[0].switchType = relay_settings.switchType[0];
+//    g_zcl_onOffCfgAttrs[1].custom_swtichType = g_zcl_onOffCfgAttrs[1].switchType = relay_settings.switchType[1];
+    g_zcl_onOffCfgAttrs[0].switchActions = relay_settings.switchActions[0];
+//    g_zcl_onOffCfgAttrs[1].switchActions = relay_settings.switchActions[1];
+    g_zcl_onOffCfgAttrs[0].custom_decoupled = relay_settings.switch_decoupled[0];
+//    g_zcl_onOffCfgAttrs[1].custom_decoupled = relay_settings.switch_decoupled[1];
+
 }
 
 void dev_relay_init() {

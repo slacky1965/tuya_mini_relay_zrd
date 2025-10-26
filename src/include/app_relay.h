@@ -31,6 +31,7 @@ void set_relay_status(uint8_t i, uint8_t status);
 
 nv_sts_t relay_settings_save();
 nv_sts_t relay_settings_restore();
+void relay_settints_default();
 
 void dev_relay_init();
 

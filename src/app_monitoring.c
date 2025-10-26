@@ -105,6 +105,7 @@ static void clear_user_data(uint32_t flash_addr) {
 }
 
 static void init_default_energy_cons() {
+    clear_user_data(BEGIN_USER_DATA);
     memset(&energy_cons, 0, sizeof(energy_cons_t));
     energy_cons.id = ID_ENERGY;
     energy_cons.flash_addr_start = BEGIN_USER_DATA;
@@ -221,7 +222,6 @@ void energy_restore() {
 #if UART_PRINTF_MODE && DEBUG_SAVE
         printf("No saved energy_cons! Init.\r\n");
 #endif /* UART_PRINTF_MODE */
-        clear_user_data(BEGIN_USER_DATA);
         init_default_energy_cons();
         return;
     }
@@ -254,7 +254,6 @@ void energy_restore() {
 #if UART_PRINTF_MODE && DEBUG_SAVE
         printf("No active saved energy_cons! Reinit.\r\n");
 #endif /* UART_PRINTF_MODE */
-        clear_user_data(BEGIN_USER_DATA);
         init_default_energy_cons();
     }
 
@@ -287,4 +286,13 @@ void energy_save() {
 #endif /* UART_PRINTF_MODE */
 
     }
+}
+
+void energy_remove() {
+
+#if UART_PRINTF_MODE && DEBUG_SAVE
+        printf("Energy removed\r\n");
+#endif /* UART_PRINTF_MODE */
+
+    init_default_energy_cons();
 }

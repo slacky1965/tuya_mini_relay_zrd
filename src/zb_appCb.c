@@ -286,7 +286,10 @@ void app_leaveCnfHandler(nlme_leave_cnf_t *pLeaveCnf)
 
 //    printf("app_leaveCnfHandler\r\n");
 
-    if(pLeaveCnf->status == SUCCESS){
+    if(pLeaveCnf->status == SUCCESS) {
+
+        relay_settints_default();
+        energy_remove();
 
         zb_deviceFactoryNewSet(true);
 

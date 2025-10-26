@@ -185,7 +185,7 @@ static void app_zclWriteReqCmd(uint8_t epId, uint16_t clusterId, zclWriteCmd_t *
     zcl_onOffCfgAttr_t *pOnOffCfg = zcl_onOffCfgAttrsGet();
     pOnOffCfg += idx;
 
-    printf("app_zclWriteReqCmd\r\n");
+//    printf("app_zclWriteReqCmd\r\n");
 
     if (clusterId == ZCL_CLUSTER_GEN_ON_OFF) {
         for (uint32_t i = 0; i < numAttr; i++) {
@@ -887,6 +887,7 @@ status_t app_msInputCb(zclIncomingAddrInfo_t *pAddrInfo, uint8_t cmdId, void *cm
 status_t app_meteringCb(zclIncomingAddrInfo_t *pAddrInfo, uint8_t cmdId, void *cmdPayload)
 {
 
+//    printf("app_meteringCb\r\n");
     return ZCL_STA_SUCCESS;
 }
 

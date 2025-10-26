@@ -14,6 +14,7 @@
 #include "app_switch.h"
 #include "app_bootloader.h"
 #include "zcl_onoffSwitchCfg.h"
+#include "zcl_se_metering.h"
 #include "app_reporting.h"
 #include "app_endpoint_cfg.h"
 #include "app_button.h"

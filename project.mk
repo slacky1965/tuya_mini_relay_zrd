@@ -8,6 +8,7 @@ OBJS += \
 $(OUT_PATH)/$(SRC_PATH)/common/main.o \
 $(OUT_PATH)/$(SRC_PATH)/zcl/zcl_reporting.o \
 $(OUT_PATH)/$(SRC_PATH)/zcl/zcl_onoffSwitchCfg.o \
+$(OUT_PATH)/$(SRC_PATH)/zcl/zcl_se_metering.o \
 $(OUT_PATH)/$(SRC_PATH)/zb_appCb.o \
 $(OUT_PATH)/$(SRC_PATH)/zcl_appCb.o \
 $(OUT_PATH)/$(SRC_PATH)/app_bootloader.o \
