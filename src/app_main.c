@@ -128,6 +128,7 @@ void user_app_init(void)
     app_uart_init();
 
     TL_ZB_TIMER_SCHEDULE(app_monitoringCb, NULL, TIMEOUT_1SEC);
+    TL_ZB_TIMER_SCHEDULE(energy_timerCb, NULL, TIMEOUT_1MIN);
 
 //    printf("FLASH_ADDR_OF_OTA_IMAGE: 0x%08x\r\n", FLASH_ADDR_OF_OTA_IMAGE);
 //    printf("BEGIN_USER_DATA: 0x%x\r\n", BEGIN_USER_DATA);

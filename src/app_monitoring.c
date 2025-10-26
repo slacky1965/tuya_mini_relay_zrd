@@ -18,10 +18,7 @@ static uint32_t new_energy, old_energy = 0;
 static uint8_t  default_energy_cons = false;
 static uint8_t  first_start = true;
 static energy_cons_t energy_cons = {0};
-
-//static uint32_t energy_addr_start = BEGIN_USER_DATA;
-//static uint32_t energy_addr_end = END_USER_DATA;
-
+static bool new_energy_save = false;
 
 #if UART_PRINTF_MODE && DEBUG_PACKAGE
 void static print_package(uint8_t *head, uint8_t *buff, size_t len) {
@@ -104,6 +101,40 @@ static void clear_user_data(uint32_t flash_addr) {
     }
 }
 
+static void energy_saveCb(void *args) {
+
+    light_blink_start(1, 250, 250);
+
+    if (default_energy_cons) {
+        energy_cons.crc = checksum((uint8_t*)&(energy_cons), sizeof(energy_cons_t));
+        flash_erase(energy_cons.flash_addr_start);
+        flash_write(energy_cons.flash_addr_start, sizeof(energy_cons_t), (uint8_t*)&(energy_cons));
+        default_energy_cons = false;
+#if UART_PRINTF_MODE && DEBUG_SAVE
+        printf("Save energy_cons to flash address - 0x%x\r\n", energy_cons.flash_addr_start);
+#endif /* UART_PRINTF_MODE */
+    } else {
+        energy_cons.flash_addr_start += FLASH_PAGE_SIZE;
+        if (energy_cons.flash_addr_start == END_USER_DATA) {
+            energy_cons.flash_addr_start = BEGIN_USER_DATA;
+        }
+        if (energy_cons.flash_addr_start % FLASH_SECTOR_SIZE == 0) {
+            flash_erase(energy_cons.flash_addr_start);
+        }
+        energy_cons.top++;
+        energy_cons.top &= TOP_MASK;
+        energy_cons.crc = checksum((uint8_t*)&(energy_cons), sizeof(energy_cons_t));
+        flash_write(energy_cons.flash_addr_start, sizeof(energy_cons_t), (uint8_t*)&(energy_cons));
+#if UART_PRINTF_MODE && DEBUG_SAVE
+        printf("Save energy_cons to flash address - 0x%x\r\n", energy_cons.flash_addr_start);
+#endif /* UART_PRINTF_MODE */
+
+    }
+
+    new_energy_save = false;
+}
+
+
 static void init_default_energy_cons() {
     clear_user_data(BEGIN_USER_DATA);
     memset(&energy_cons, 0, sizeof(energy_cons_t));
@@ -112,9 +143,8 @@ static void init_default_energy_cons() {
     energy_cons.flash_addr_end = END_USER_DATA;
     g_zcl_seAttrs.cur_sum_delivered = 0;
     default_energy_cons = true;
-    energy_save();
+    energy_saveCb(NULL);
 }
-
 
 int32_t app_monitoringCb(void *arg) {
 
@@ -261,31 +291,16 @@ void energy_restore() {
 
 void energy_save() {
 
-    if (default_energy_cons) {
-        energy_cons.crc = checksum((uint8_t*)&(energy_cons), sizeof(energy_cons_t));
-        flash_erase(energy_cons.flash_addr_start);
-        flash_write(energy_cons.flash_addr_start, sizeof(energy_cons_t), (uint8_t*)&(energy_cons));
-        default_energy_cons = false;
-#if UART_PRINTF_MODE && DEBUG_SAVE
-        printf("Save energy_cons to flash address - 0x%x\r\n", energy_cons.flash_addr_start);
-#endif /* UART_PRINTF_MODE */
-    } else {
-        energy_cons.flash_addr_start += FLASH_PAGE_SIZE;
-        if (energy_cons.flash_addr_start == END_USER_DATA) {
-            energy_cons.flash_addr_start = BEGIN_USER_DATA;
-        }
-        if (energy_cons.flash_addr_start % FLASH_SECTOR_SIZE == 0) {
-            flash_erase(energy_cons.flash_addr_start);
-        }
-        energy_cons.top++;
-        energy_cons.top &= TOP_MASK;
-        energy_cons.crc = checksum((uint8_t*)&(energy_cons), sizeof(energy_cons_t));
-        flash_write(energy_cons.flash_addr_start, sizeof(energy_cons_t), (uint8_t*)&(energy_cons));
-#if UART_PRINTF_MODE && DEBUG_SAVE
-        printf("Save energy_cons to flash address - 0x%x\r\n", energy_cons.flash_addr_start);
-#endif /* UART_PRINTF_MODE */
+    new_energy_save = true;
+}
 
+int32_t energy_timerCb(void *args) {
+
+    if (new_energy_save) {
+        TL_SCHEDULE_TASK(energy_saveCb, NULL);
     }
+
+    return 0;
 }
 
 void energy_remove() {

@@ -30,8 +30,8 @@ typedef struct __attribute__((packed)) {
     uint8_t     crc;
 } energy_cons_t;
 
-//void send_uart_commandCb(void *args);
 int32_t app_monitoringCb(void *arg);
+int32_t energy_timerCb(void *args);
 void monitoring_handler();
 void energy_restore();
 void energy_save();
