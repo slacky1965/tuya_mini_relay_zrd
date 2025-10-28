@@ -121,10 +121,10 @@ extern "C" {
         0x100000 End Flash
      */
 //    #define OTA_ADDRESS                 0x70000 // 0x77000 address rewriting for Tuya bootloader
-    #define FW_DATA_SIZE                0x35000                                 // max size of firmware
-    #define BEGIN_USER_DATA             (FLASH_ADDR_OF_APP_FW + FW_DATA_SIZE)   // begin address for saving energy
-    #define USER_DATA_SIZE              (FLASH_ADDR_OF_OTA_IMAGE - BEGIN_USER_DATA)
-    #define END_USER_DATA               (BEGIN_USER_DATA + USER_DATA_SIZE)
+//    #define FW_DATA_SIZE                0x35000                                 // max size of firmware
+    #define BEGIN_USER_DATA             0x96000   // (FLASH_ADDR_OF_APP_FW + FW_DATA_SIZE)   // begin address for saving energy
+    #define END_USER_DATA               0xFC000   // (BEGIN_USER_DATA + USER_DATA_SIZE)
+    #define USER_DATA_SIZE              (END_USER_DATA - BEGIN_USER_DATA)   //(FLASH_ADDR_OF_OTA_IMAGE - BEGIN_USER_DATA)
 #endif
     #define BOARD                       BOARD_TUYA_ZTU
     #define CLOCK_SYS_CLOCK_HZ          48000000

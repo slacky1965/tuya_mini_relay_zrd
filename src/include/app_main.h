@@ -12,7 +12,6 @@
 #include "app_relay.h"
 #include "app_onoff.h"
 #include "app_switch.h"
-#include "app_bootloader.h"
 #include "zcl_onoffSwitchCfg.h"
 #include "zcl_se_metering.h"
 #include "app_reporting.h"
