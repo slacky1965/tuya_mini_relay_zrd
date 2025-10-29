@@ -102,8 +102,6 @@ int flash_main(void){
 
 	u8 isRetention = (state == SYSTEM_DEEP_RETENTION) ? 1 : 0;
 
-    tuya_zigbee_ota();
-
 	os_init(isRetention);
 
 #if 0
