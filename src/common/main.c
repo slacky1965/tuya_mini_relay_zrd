@@ -44,6 +44,10 @@ static const u32 flag_addr_ok = 0x33CC55AA;
 
 
 extern void user_init(bool isRetention);
+extern void app_flash_write_status(flash_status_typedef_e type , unsigned short data);
+extern void app_flash_read_page(unsigned long addr, unsigned long len, unsigned char *buf);
+extern void app_flash_erase_sector(unsigned long addr);
+extern void app_flash_write_page(unsigned long addr, unsigned long len, unsigned char *buf);
 
 /* Reformat low OTA to big OTA, Zigbee BootLoader to Zigbee no BootLoader */
 
@@ -53,39 +57,39 @@ _attribute_ram_code_ void tuya_zigbee_ota(void) {
     u32 faddrr = ZIGBEE_BOOT_OTA_FADDR; // 0x008000
     u32 faddrw = BIG_OTA1_FADDR;    // 0x000000
     u32 buf_blk[64];    // max 256 bytes
-    flash_write_status(0, 0);
+    app_flash_write_status(0, 0);
     // search for start firmware address 0x008000 or 0x020000 ?
-    flash_read_page(faddrr, 16, (unsigned char *) &buf_blk);
+    app_flash_read_page(faddrr, 16, (unsigned char *) &buf_blk);
     if(buf_blk[2] != id) { // 0x008000 != bootable
         faddrr = OTA2_FADDR;
-        flash_read_page(faddrr, 16, (unsigned char *) &buf_blk);
+        app_flash_read_page(faddrr, 16, (unsigned char *) &buf_blk);
         if(buf_blk[2] != id) // 0x020000 != bootable
             return;
     }
     // faddrr: 0x008000 == bootable || 0x020000 == bootable
-    flash_read_page(faddrr, sizeof(buf_blk), (unsigned char *) &buf_blk);
+    app_flash_read_page(faddrr, sizeof(buf_blk), (unsigned char *) &buf_blk);
     if(buf_blk[2] == id && buf_blk[6] > FLASH_SECTOR_SIZE && buf_blk[6] < BIN_SIZE_MAX_OTA) {
         buf_blk[2] &= 0xffffffff; // clear id "bootable"
         size = buf_blk[6];
         size += FLASH_SECTOR_SIZE - 1;
         size &= ~(FLASH_SECTOR_SIZE - 1);
         size += faddrw;
-        flash_erase_sector(faddrw); // 45 ms, 4 mA
-        flash_write_page(faddrw, sizeof(buf_blk), (unsigned char *) &buf_blk);
+        app_flash_erase_sector(faddrw); // 45 ms, 4 mA
+        app_flash_write_page(faddrw, sizeof(buf_blk), (unsigned char *) &buf_blk);
         faddrr += sizeof(buf_blk);
         // size += faddrw;
         faddrw += sizeof(buf_blk);
         while(faddrw < size) {
             if((faddrw & (FLASH_SECTOR_SIZE - 1)) == 0)
-                flash_erase_sector(faddrw); // 45 ms, 4 mA
+                app_flash_erase_sector(faddrw); // 45 ms, 4 mA
                 // rd-wr 4kB - 20 ms, 4 mA
-                flash_read_page(faddrr, sizeof(buf_blk), (unsigned char *) &buf_blk);
+                app_flash_read_page(faddrr, sizeof(buf_blk), (unsigned char *) &buf_blk);
             faddrr += sizeof(buf_blk);
-            flash_write_page(faddrw, sizeof(buf_blk), (unsigned char *) &buf_blk);
+            app_flash_write_page(faddrw, sizeof(buf_blk), (unsigned char *) &buf_blk);
             faddrw += sizeof(buf_blk);
         }
         // set id "bootable" to new segment
-        flash_write_page(BIG_OTA1_FADDR+8, sizeof(id), (unsigned char *) &id);
+        app_flash_write_page(BIG_OTA1_FADDR+8, sizeof(id), (unsigned char *) &id);
         while(1)
             reg_pwdn_ctrl = BIT(5);
     }
@@ -153,7 +157,6 @@ _attribute_ram_code_ int main(void) {
         tuya_zigbee_ota();
     }
 
-//    tl_id = *(u32 *)(BIG_OTA1_FADDR + 8);
     return flash_main();
 }
 
