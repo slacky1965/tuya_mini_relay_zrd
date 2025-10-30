@@ -4,10 +4,11 @@ OUT_DIR += \
 /platform/chip_8258/flash \
 /platform/services/b85m
  
+
  
 OBJS += \
-$(OUT_PATH)/platform/chip_8258/flash.o \
 $(OUT_PATH)/platform/chip_8258/adc.o \
+$(OUT_PATH)/platform/chip_8258/flash.o \
 $(OUT_PATH)/platform/chip_8258/flash/flash_common.o \
 $(OUT_PATH)/platform/chip_8258/flash/flash_mid011460c8.o \
 $(OUT_PATH)/platform/chip_8258/flash/flash_mid1060c8.o \

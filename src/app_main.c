@@ -180,10 +180,6 @@ void user_init(bool isRetention)
     /* Initialize LEDs*/
     light_init();
 
-#ifdef CHECK_BOOTLOADER
-    bootloader_check();
-#endif
-
     /* Initialize Stack */
     stack_init();
 

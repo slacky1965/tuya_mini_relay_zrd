@@ -35,21 +35,21 @@ OUT_PATH := ./out
 BIN_PATH := ./bin
 MAKE_INCLUDES := ./make
 TOOLS_PATH := ./tools
-BOOT_FILE := $(OUT_PATH)/bootloader.bin
 VERSION_RELEASE := V$(shell awk -F " " '/APP_RELEASE/ {gsub("0x",""); printf "%.1f", $$3/10.0; exit}' $(SRC_PATH)/include/version_cfg.h)
 VERSION_BUILD := $(shell awk -F " " '/APP_BUILD/ {gsub("0x",""); printf "%02d", $$3; exit}' ./src/include/version_cfg.h)
 ZCL_VERSION_FILE := $(shell git log -1 --format=%cd --date=format:%Y%m%d -- src |  sed -e "'s/./\'&\',/g'" -e "'s/.$$//'")
-BOOT_SIZE := $(shell ls -l $(BOOT_FILE) | awk '{print $$5}')
 
 
 TL_CHECK = $(TOOLS_PATH)/tl_check_fw.py
-MAKE_OTA = $(TOOLS_PATH)/make_ota.py
-MAKE_OTA_TUYA = $(TOOLS_PATH)/make_ota_tuya.py
+MAKE_OTA = $(TOOLS_PATH)/zigbee_ota.py
+#MAKE_OTA = $(TOOLS_PATH)/make_ota.py
 
 INCLUDE_PATHS := \
 -I$(SDK_PATH)/platform \
 -I$(SDK_PATH)/proj/common \
 -I$(SDK_PATH)/proj \
+-I$(SDK_PATH)/platform \
+-I$(SDK_PATH)/platform/chip_8258 \
 -I$(SDK_PATH)/zigbee/common/includes \
 -I$(SDK_PATH)/zigbee/zbapi \
 -I$(SDK_PATH)/zigbee/bdb/includes \
@@ -85,18 +85,9 @@ GCC_FLAGS += \
 -DBUILD_DATE="{8,$(ZCL_VERSION_FILE)}"
 endif
   
-ifeq ($(CHECK_BL),1)
-VERSION_BUILD = 00
-GCC_FLAGS += \
--DCHECK_BOOTLOADER \
--DVERSION_BUILD \
--DAPP_BUILD=0x00
-endif
-  
 GCC_FLAGS += \
 $(DEVICE_TYPE) \
 $(MCU_TYPE) \
--DBOOT_SIZE=$(BOOT_SIZE)
 
 OBJ_SRCS := 
 S_SRCS := 
@@ -137,8 +128,7 @@ LST_FILE := $(OUT_PATH)/$(PROJECT_NAME).lst
 BIN_FILE := $(OUT_PATH)/$(PROJECT_NAME).bin
 ELF_FILE := $(OUT_PATH)/$(PROJECT_NAME).elf
 FW_FILE  := $(OUT_PATH)/firmware.bin
-BOOT_FILE := $(OUT_PATH)/bootloader.bin
-APPENDIX := $(BIN_PATH)/appendix.bin
+BOOTLOADER := $(BIN_PATH)/bootloader/bootloader.bin
 
 SIZEDUMMY += \
 sizedummy \
@@ -147,8 +137,11 @@ sizedummy \
 # All Target
 all: pre-build main-build
 
-flash: $(BIN_FILE)
+flash8000: $(BIN_FILE)
 	@python3 $(TOOLS_PATH)/TlsrPgm.py -p$(DOWNLOAD_PORT) -z11 -a 100 -s -m we 0x8000 $(BIN_FILE)
+
+flash0: $(BIN_FILE)
+	@python3 $(TOOLS_PATH)/TlsrPgm.py -p$(DOWNLOAD_PORT) -z11 -a 100 -s -m we 0 $(BIN_FILE)
 
 erase-flash:
 	@python3 $(TOOLS_PATH)/TlsrPgm.py -p$(DOWNLOAD_PORT) -z11 -a 100 -s ea
@@ -191,32 +184,20 @@ $(LST_FILE): $(ELF_FILE)
 	@echo ' '
 	
 
-ifeq ($(CHECK_BL),1)
 $(BIN_FILE): $(ELF_FILE)
 	@echo 'Create Flash image (binary format)'
 	@$(OBJCOPY) -v -O binary $(ELF_FILE)  $(BIN_FILE)
 	@python3 $(TL_CHECK) $(BIN_FILE)
-	@echo 'Create zigbee Tuya OTA file'
-	@python3 $(MAKE_OTA_TUYA) -m 4417 -t 54179 -o $(BIN_PATH)/1141-d3a3-1111114b-tuya_mini_relay.zigbee $(BIN_FILE) $(BOOT_FILE)
-	@echo ' '
-	@echo 'Finished building: $@'
-	@echo ' '
-else
-$(BIN_FILE): $(ELF_FILE)
-	@echo 'Create Flash image (binary format)'
-	@$(OBJCOPY) -v -O binary $(ELF_FILE)  $(BIN_FILE)
-	@python3 $(TL_CHECK) $(BIN_FILE)
-	@cat $(BIN_FILE) $(BOOT_FILE) > $(FW_FILE)
 	@cp $(BIN_FILE) $(BIN_PATH)/$(PROJECT_NAME)_$(VERSION_RELEASE).$(VERSION_BUILD).bin
 	@echo 'Create zigbee OTA file'
-	@python3 $(MAKE_OTA) -ot $(PROJECT_NAME) $(BIN_PATH)/$(PROJECT_NAME)_$(VERSION_RELEASE).$(VERSION_BUILD).bin
+	@echo 'Create zigbee OTA file'
+	@python3 $(MAKE_OTA) -t $(PROJECT_NAME) -s "Slacky-DIY OTA" $(BIN_PATH)/$(PROJECT_NAME)_$(VERSION_RELEASE).$(VERSION_BUILD).bin 
+	@python3 $(MAKE_OTA) -t $(PROJECT_NAME) -i 0x039c -s "Slacky-DIY OTA" $(BIN_PATH)/$(PROJECT_NAME)_$(VERSION_RELEASE).$(VERSION_BUILD).bin 
+	@echo 'Create zigbee Tuya OTA file'
+	@python3 $(MAKE_OTA) -t $(PROJECT_NAME) -m 4417 -i 54179 -v0x1111114b -s "Slacky-DIY OTA" $(BIN_PATH)/$(PROJECT_NAME)_$(VERSION_RELEASE).$(VERSION_BUILD).bin   
 	@echo ' '
 	@echo 'Finished building: $@'
 	@echo ' '
-endif
-
-$(OBJ_DIR)/bin_updater.o: $(OBJ_DIR)
-    @objcopy -I binary --output-target elf32-littlearm --rename-section .data=.bin_files ./updater.bin $@	 
 
 sizedummy: $(ELF_FILE)
 	@echo 'Invoking: Print Size'
@@ -227,11 +208,11 @@ sizedummy: $(ELF_FILE)
 # Other Targets
 clean:
 	@echo $(INCLUDE_PATHS)
-	-$(RM) $(FLASH_IMAGE) $(ELFS) $(OBJS) $(SIZEDUMMY) $(LST_FILE) $(ELF_FILE)
+	-$(RM) $(FLASH_IMAGE) $(ELFS) $(OBJS) $(SIZEDUMMY) $(LST_FILE) $(ELF_FILE) $(BIN_PATH)/*.bin $(BIN_PATH)/*.zigbee
 	-@echo ' '
 
 clean-project:
-	-$(RM) $(FLASH_IMAGE) $(ELFS) $(SIZEDUMMY) $(LST_FILE) $(ELF_FILE)
+	-$(RM) $(FLASH_IMAGE) $(ELFS) $(SIZEDUMMY) $(LST_FILE) $(ELF_FILE) $(BIN_PATH)/*.bin $(BIN_PATH)/*.zigbee
 	-$(RM) -R $(OUT_PATH)/$(SRC_PATH)/*.o
 	-@echo ' '
 	
