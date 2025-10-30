@@ -4,10 +4,10 @@ OUT_DIR += \
 /$(SRC_PATH)/common \
 /$(SRC_PATH)/patch_sdk \
 /$(SRC_PATH)/zcl
- 
+
 OBJS += \
 $(OUT_PATH)/$(SRC_PATH)/common/main.o \
-$(OUT_PATH)/$(SRC_PATH)/patch_sdk/flash.o \
+$(OUT_PATH)/$(SRC_PATH)/common/flash.o \
 $(OUT_PATH)/$(SRC_PATH)/zcl/zcl_reporting.o \
 $(OUT_PATH)/$(SRC_PATH)/zcl/zcl_onoffSwitchCfg.o \
 $(OUT_PATH)/$(SRC_PATH)/zcl/zcl_se_metering.o \
