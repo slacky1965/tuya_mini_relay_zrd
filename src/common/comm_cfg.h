@@ -47,7 +47,7 @@
  *
  * Normal mode is used by default.
  */
-#define BOOT_LOADER_MODE					1
+#define BOOT_LOADER_MODE					0
 
 
 
