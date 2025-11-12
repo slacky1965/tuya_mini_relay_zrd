@@ -452,7 +452,14 @@ zcl_msAttr_t g_zcl_msAttrs = {
     .freq = 0xffff,
     .current = 0xffff,
     .voltage = 0xffff,
-    .power = 0xffff,
+    .power = 0x8000,
+    .power_max = DEFAULT_POWER_MAX,
+    .current_max = DEFAULT_CURRENT_MAX,
+    .voltage_min = DEFAULT_VOLTAGE_MIN,
+    .voltage_max = DEFAULT_VOLTAGE_MAX,
+    .time_reload = DEFAULT_TIME_RELOAD,
+    .protect_control = DEFAULT_PROTECT_CONTROL,
+    .auto_restart = DEFAULT_AUTORESTART,
 };
 
 const zclAttrInfo_t ms_attrTbl[] = {
@@ -461,6 +468,13 @@ const zclAttrInfo_t ms_attrTbl[] = {
     {ZCL_ATTRID_RMS_CURRENT,                ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.current            },
     {ZCL_ATTRID_RMS_VOLTAGE,                ZCL_UINT16,   RR,   (uint8_t*)&g_zcl_msAttrs.voltage            },
     {ZCL_ATTRID_ACTIVE_POWER,               ZCL_INT16,    RR,   (uint8_t*)&g_zcl_msAttrs.power              },
+    {ZCL_ATTRID_CUSTOM_VOLTAGE_MIN,         ZCL_UINT16,   RW,   (uint8_t*)&g_zcl_msAttrs.voltage_min        },
+    {ZCL_ATTRID_CUSTOM_VOLTAGE_MAX,         ZCL_UINT16,   RW,   (uint8_t*)&g_zcl_msAttrs.voltage_max        },
+    {ZCL_ATTRID_CUSTOM_CURRENT_MAX,         ZCL_UINT16,   RW,   (uint8_t*)&g_zcl_msAttrs.current_max        },
+    {ZCL_ATTRID_CUSTOM_POWER_MAX,           ZCL_INT16,    RW,   (uint8_t*)&g_zcl_msAttrs.power_max          },
+    {ZCL_ATTRID_CUSTOM_TIME_RELOAD,         ZCL_UINT16,   RW,   (uint8_t*)&g_zcl_msAttrs.time_reload        },
+    {ZCL_ATTRID_CUSTOM_PROTECT_CONTROL,     ZCL_BOOLEAN,  RW,   (uint8_t*)&g_zcl_msAttrs.protect_control    },
+    {ZCL_ATTRID_CUSTOM_AUTORESTART,         ZCL_BOOLEAN,  RW,   (uint8_t*)&g_zcl_msAttrs.auto_restart       },
 
     { ZCL_ATTRID_GLOBAL_CLUSTER_REVISION,   ZCL_UINT16,   R,    (uint8_t*)&zcl_attr_global_clusterRevision  },
 };

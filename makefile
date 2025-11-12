@@ -87,7 +87,7 @@ endif
   
 GCC_FLAGS += \
 $(DEVICE_TYPE) \
-$(MCU_TYPE) \
+$(MCU_TYPE)
 
 OBJ_SRCS := 
 S_SRCS := 
@@ -189,7 +189,6 @@ $(BIN_FILE): $(ELF_FILE)
 	@$(OBJCOPY) -v -O binary $(ELF_FILE)  $(BIN_FILE)
 	@python3 $(TL_CHECK) $(BIN_FILE)
 	@cp $(BIN_FILE) $(BIN_PATH)/$(PROJECT_NAME)_$(VERSION_RELEASE).$(VERSION_BUILD).bin
-	@echo 'Create zigbee OTA file'
 	@echo 'Create zigbee OTA file'
 	@python3 $(MAKE_OTA) -t $(PROJECT_NAME) -s "Slacky-DIY OTA" $(BIN_PATH)/$(PROJECT_NAME)_$(VERSION_RELEASE).$(VERSION_BUILD).bin 
 	@python3 $(MAKE_OTA) -t $(PROJECT_NAME) -i 0x039c -s "Slacky-DIY OTA" $(BIN_PATH)/$(PROJECT_NAME)_$(VERSION_RELEASE).$(VERSION_BUILD).bin 
