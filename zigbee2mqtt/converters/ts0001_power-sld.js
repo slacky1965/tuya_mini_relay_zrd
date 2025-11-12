@@ -8,6 +8,14 @@ import * as logger from 'zigbee-herdsman-converters/lib/logger';
 const e = exposes_1.presets;
 const ea = exposes_1.access;
 
+const attrRelayVoltageMin = 0xf000;
+const attrRelayVoltageMax = 0xf001;
+const attrRelayCurrentMax = 0xf002;
+const attrRelayPowerMax = 0xf003;
+const attrRelayTimeReload = 0xf004;
+const attrRelayProtectCtrl = 0xf005;
+const attrRelayAutoRestart = 0xf006;
+
 function localActionExtend(args = {}) {
     const { localAction = ["hold", "single", "double", "triple", "quadruple", "quintuple", "release"], 
             reporting = true, 
@@ -113,7 +121,7 @@ export default {
         m.electricityMeter({
           current: {"divisor": 100}, 
           voltage: {"divisor": 100}, 
-          power: {"divisor": 100}, 
+          power: {"divisor": 1}, 
           energy: {"divisor": 100},
           acFrequency: {"divisor": 100}
         }),
@@ -130,6 +138,70 @@ export default {
           commandsResponse: {},
         }),
         energyResetExtend.energyReset(),
+        m.enumLookup({
+            name: "protect_control",
+            lookup: {off: 0, on: 1},
+            cluster: "haElectricalMeasurement",
+            attribute: {ID: attrRelayProtectCtrl, type: 0x10},
+            description: "Protection control enable/disable",
+        }),
+        m.enumLookup({
+            name: "automatic_restart",
+            lookup: {off: 0, on: 1},
+            cluster: "haElectricalMeasurement",
+            attribute: {ID: attrRelayAutoRestart, type: 0x10},
+            description: "Automatic restart enable/disable for voltage only",
+        }),
+        m.numeric({
+            name: "voltage_min",
+            unit: "V",
+            cluster: "haElectricalMeasurement",
+            attribute: {ID: attrRelayVoltageMin, type: 0x21},
+            description: "Minimum voltage value",
+            valueMin: 0,
+            valueMax: 219,
+            scale: 100,
+        }),
+        m.numeric({
+            name: "voltage_max",
+            unit: "V",
+            cluster: "haElectricalMeasurement",
+            attribute: {ID: attrRelayVoltageMax, type: 0x21},
+            description: "Maximum voltage value",
+            valueMin: 221,
+            valueMax: 300,
+            scale: 100,
+        }),
+        m.numeric({
+            name: "current_max",
+            unit: "A",
+            cluster: "haElectricalMeasurement",
+            attribute: {ID: attrRelayCurrentMax, type: 0x21},
+            description: "Maximum current value",
+            scale: 100,
+            valueMin: 0,
+            valueMax: 16,
+            valueStep: 0.1,
+       }),
+        m.numeric({
+            name: "power_max",
+            unit: "W",
+            cluster: "haElectricalMeasurement",
+            attribute: {ID: attrRelayPowerMax, type: 0x29},
+            description: "Maximum power value",
+            valueMin: 0,
+            valueMax: 3600,
+        }),
+        m.numeric({
+            name: "time_reload",
+            unit: "sec",
+            cluster: "haElectricalMeasurement",
+            attribute: {ID: attrRelayTimeReload, type: 0x21},
+            description: "Reload time",
+            valueMin: 5,
+            valueMax: 60,
+        }),
+
     ],
     meta: {},
     ota: true,
