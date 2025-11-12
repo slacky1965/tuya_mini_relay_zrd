@@ -232,7 +232,7 @@ static void app_zclWriteReqCmd(uint8_t epId, uint16_t clusterId, zclWriteCmd_t *
             if (attr[i].attrID == ZCL_ATTRID_CUSTOM_VOLTAGE_MIN) {
                 uint16_t v_min = attr[i].attrData[0] & 0xff;
                 v_min |= (attr[i].attrData[1] << 8) & 0xffff;
-                printf("voltage_min: %d\r\n", v_min);
+//                printf("voltage_min: %d\r\n", v_min);
                 if (v_min < VOLTAGE_MID) {
                     relay_settings.voltage_min = v_min;
                     save = true;
@@ -240,7 +240,7 @@ static void app_zclWriteReqCmd(uint8_t epId, uint16_t clusterId, zclWriteCmd_t *
             } else if (attr[i].attrID == ZCL_ATTRID_CUSTOM_VOLTAGE_MAX) {
                 uint16_t v_max = attr[i].attrData[0] & 0xff;
                 v_max |= (attr[i].attrData[1] << 8) & 0xffff;
-                printf("voltage_max: %d\r\n", v_max);
+//                printf("voltage_max: %d\r\n", v_max);
                 if (v_max > VOLTAGE_MID) {
                     relay_settings.voltage_max = v_max;
                     save = true;
@@ -248,7 +248,7 @@ static void app_zclWriteReqCmd(uint8_t epId, uint16_t clusterId, zclWriteCmd_t *
             } else if (attr[i].attrID == ZCL_ATTRID_CUSTOM_CURRENT_MAX) {
                 uint16_t i_max = attr[i].attrData[0] & 0xff;
                 i_max |= (attr[i].attrData[1] << 8) & 0xffff;
-                printf("current_max: %d\r\n", i_max);
+//                printf("current_max: %d\r\n", i_max);
                 if (i_max <= DEFAULT_CURRENT_MAX) {
                     relay_settings.current_max = i_max;
                     save = true;
@@ -256,7 +256,7 @@ static void app_zclWriteReqCmd(uint8_t epId, uint16_t clusterId, zclWriteCmd_t *
             } else if (attr[i].attrID == ZCL_ATTRID_CUSTOM_POWER_MAX) {
                 int16_t p_max = attr[i].attrData[0] & 0xff;
                 p_max |= (attr[i].attrData[1] << 8) & 0xffff;
-                printf("power_max: %d\r\n", p_max);
+//                printf("power_max: %d\r\n", p_max);
                 if (p_max <= DEFAULT_POWER_MAX) {
                     relay_settings.power_max = p_max;
                     save = true;
@@ -264,21 +264,21 @@ static void app_zclWriteReqCmd(uint8_t epId, uint16_t clusterId, zclWriteCmd_t *
             } else if (attr[i].attrID == ZCL_ATTRID_CUSTOM_TIME_RELOAD) {
                 uint16_t time = attr[i].attrData[0] & 0xff;
                 time |= (attr[i].attrData[1] << 8) & 0xffff;
-                printf("time_reload: %d\r\n", time);
+//                printf("time_reload: %d\r\n", time);
                 if (time >= TIME_RELOAD_MIN && time <= TIME_RELOAD_MAX) {
                     relay_settings.time_reload = time;
                     save = true;
                 }
             } else if (attr[i].attrID == ZCL_ATTRID_CUSTOM_PROTECT_CONTROL) {
                 uint8_t ctrl = attr[i].attrData[0];
-                printf("protect_control: %d\r\n", ctrl);
+//                printf("protect_control: %d\r\n", ctrl);
                 if (ctrl == PROTECT_CONTROL_OFF || ctrl == PROTECT_CONTROL_ON) {
                     relay_settings.protect_control = ctrl;
                     save = true;
                 }
             } else if (attr[i].attrID == ZCL_ATTRID_CUSTOM_AUTORESTART) {
                 uint8_t restart = attr[i].attrData[0];
-                printf("auto_restart: %d\r\n", restart);
+//                printf("auto_restart: %d\r\n", restart);
                 if (restart == AUTORESTART_OFF || restart == AUTORESTART_ON) {
                     relay_settings.auto_restart = restart;
                     save = true;

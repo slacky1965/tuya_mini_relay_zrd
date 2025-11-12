@@ -42,7 +42,6 @@ typedef struct {
 } unit_relay_t;
 
 typedef struct {
-    ev_timer_event_t *timerAutoRestartEvt; //[AMT_RELAY];
     uint8_t         amt;
     unit_relay_t    unit_relay[AMT_RELAY];
 } dev_relay_t;

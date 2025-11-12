@@ -40,8 +40,6 @@ void cmdOnOff_on(uint8_t ep) {
     }
     uint8_t status = RELAY_ON;
 
-    if (dev_relay.timerAutoRestartEvt) TL_ZB_TIMER_CANCEL(&dev_relay.timerAutoRestartEvt);
-
     set_relay_status(i, status);
 }
 

@@ -44,6 +44,9 @@ bool get_relay_status(uint8_t i) {
 
 void set_relay_status(uint8_t i, uint8_t status) {
 //    printf("set_relay_status(i = %d, status = %d). GPIO: %d\r\n", i, status, dev_relay.unit_relay[i].rl);
+    if (status == RELAY_ON) {
+        clear_auto_restart();
+    }
     drv_gpio_write(dev_relay.unit_relay[i].rl, status);
 }
 
@@ -206,7 +209,6 @@ void dev_relay_init() {
     dev_relay.unit_relay[0].ep = APP_ENDPOINT1;
     dev_relay.unit_relay[0].sw = SWITCH1_GPIO;
     dev_relay.unit_relay[0].rl = RELAY1_GPIO;
-    dev_relay.timerAutoRestartEvt = NULL;
 
     if (relay_settings.switchType[0] == ZCL_SWITCH_TYPE_MULTIFUNCTION) {
         check_first_start(0);

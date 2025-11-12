@@ -8,6 +8,12 @@
 
 #define ID_ENERGY               0x0FED1410
 #define TOP_MASK                0xFFFFFFFF
+#define PROTECT_VOLTAGE         0x01
+#define PROTECT_CURRENT         0x02
+#define PROTECT_POWER           0x04
+#define PROTECT_VOLTAGE_SAVE    0x08
+//#define PROTECT_CURRENT_SAVE    0x10
+//#define PROTECT_POWER_SAVE      0x20
 
 static uint8_t  pkt_out[2] = {0x58, 0xAA};
 static uint8_t  pkt_in[PKT_SIZE] = {0};
@@ -17,10 +23,12 @@ static uint64_t cur_sum_delivered;
 static uint32_t new_energy, old_energy = 0;
 static uint8_t  default_energy_cons = false;
 static uint8_t  first_start = true;
+static bool     new_energy_save = false;
+static uint8_t  protect_on = 0;
+static uint8_t  onoff_state = 0;
 static energy_cons_t energy_cons = {0};
-static bool new_energy_save = false;
-static bool protect_on = false;
-static uint8_t onoff_state = 0;
+
+ev_timer_event_t *timerAutoRestartEvt = NULL;
 
 #if UART_PRINTF_MODE && DEBUG_PACKAGE
 void static print_package(uint8_t *head, uint8_t *buff, size_t len) {
@@ -152,21 +160,26 @@ static int32_t auto_restartCb(void *args) {
 
     uint8_t i = 0;
 
-    printf("auto_restartCb. state: %d\r\n", onoff_state);
-
-    if (protect_on) {
+    if (protect_on & (PROTECT_VOLTAGE | PROTECT_CURRENT | PROTECT_POWER)) {
         if (get_relay_status(i)) cmdOnOff_off(dev_relay.unit_relay[i].ep);
-        printf("protect_on on\r\n");
         return 0;
     }
 
-    if (relay_settings.auto_restart && onoff_state) {
+    if (relay_settings.auto_restart && ((protect_on & PROTECT_VOLTAGE) || (protect_on & PROTECT_VOLTAGE_SAVE)) &&
+            !(protect_on & PROTECT_CURRENT) && !(protect_on & PROTECT_POWER) && onoff_state) {
         cmdOnOff_on(dev_relay.unit_relay[i].ep);
     }
 
-    printf("return -1\r\n");
-    dev_relay.timerAutoRestartEvt = NULL;
+    timerAutoRestartEvt = NULL;
     return -1;
+}
+
+void clear_auto_restart() {
+
+    protect_on = 0;
+
+    if (timerAutoRestartEvt) TL_ZB_TIMER_CANCEL(&timerAutoRestartEvt);
+
 }
 
 int32_t app_monitoringCb(void *arg) {
@@ -265,22 +278,22 @@ void monitoring_handler() {
                     zcl_setAttrVal(APP_ENDPOINT1, ZCL_CLUSTER_SE_METERING, ZCL_ATTRID_CURRENT_SUMMATION_DELIVERD, (uint8_t*)&cur_sum_delivered);
                 }
 
-                protect_on = false;
+                protect_on &= PROTECT_VOLTAGE_SAVE;
 
                 if (relay_settings.current_max && current_prot > relay_settings.current_max && current > relay_settings.current_max) {
-                    printf("current\r\n");
-                    protect_on = true;
+//                    printf("current\r\n");
+                    protect_on |= PROTECT_CURRENT;
                 }
 
                 if (relay_settings.power_max && power_prot > relay_settings.power_max && power > relay_settings.power_max) {
-                    printf("power: %d, power_max: %d\r\n", power, relay_settings.power_max);
-                    protect_on = true;
+//                    printf("power: %d, power_max: %d\r\n", power, relay_settings.power_max);
+                    protect_on |= PROTECT_POWER;
                 }
 
                 if ((voltage_prot < relay_settings.voltage_min && voltage < relay_settings.voltage_min) ||
                         (voltage_prot > relay_settings.voltage_max && voltage > relay_settings.voltage_max)) {
-                    printf("voltage_prot: %d, voltage: %d\r\n", voltage_prot, voltage);
-                    protect_on = true;
+//                    printf("voltage_prot: %d, voltage: %d\r\n", voltage_prot, voltage);
+                    protect_on |= PROTECT_VOLTAGE | PROTECT_VOLTAGE_SAVE;
                 }
 
                 current_prot = current;
@@ -288,11 +301,10 @@ void monitoring_handler() {
                 voltage_prot = voltage;
 
                 if (relay_settings.protect_control && protect_on && relay_settings.status_onoff[i]) {
-                    printf("protect from headnler\r\n");
-                    if (!dev_relay.timerAutoRestartEvt) {
+                    if (!timerAutoRestartEvt) {
                         onoff_state = relay_settings.status_onoff[i];
                         cmdOnOff_off(dev_relay.unit_relay[i].ep);
-                        dev_relay.timerAutoRestartEvt = TL_ZB_TIMER_SCHEDULE(auto_restartCb, NULL, (relay_settings.time_reload * 1000));
+                        timerAutoRestartEvt = TL_ZB_TIMER_SCHEDULE(auto_restartCb, NULL, (relay_settings.time_reload * 1000));
                     }
                 }
             }
@@ -339,7 +351,7 @@ void energy_restore() {
         energy_cons.flash_addr_start = flash_addr-FLASH_PAGE_SIZE;
         g_zcl_seAttrs.cur_sum_delivered = energy_cons.energy;
 #if UART_PRINTF_MODE && DEBUG_SAVE
-        printf("Read config from flash address - 0x%x\r\n", energy_cons.flash_addr_start);
+        printf("Read energy_cons from flash address - 0x%x\r\n", energy_cons.flash_addr_start);
 #endif /* UART_PRINTF_MODE */
     } else {
 #if UART_PRINTF_MODE && DEBUG_SAVE

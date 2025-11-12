@@ -36,5 +36,6 @@ void monitoring_handler();
 void energy_restore();
 void energy_save();
 void energy_remove();
+void clear_auto_restart();
 
 #endif /* SRC_INCLUDE_APP_MONITORING_H_ */
