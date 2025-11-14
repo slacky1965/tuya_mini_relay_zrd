@@ -90,6 +90,7 @@ _attribute_ram_code_ void tuya_zigbee_ota(void) {
         }
         // set id "bootable" to new segment
         app_flash_write_page(BIG_OTA1_FADDR+8, sizeof(id), (unsigned char *) &id);
+        app_flash_erase_sector(ZIGBEE_MAC_FADDR);
         while(1)
             reg_pwdn_ctrl = BIT(5);
     }
