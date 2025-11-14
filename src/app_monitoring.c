@@ -12,8 +12,6 @@
 #define PROTECT_CURRENT         0x02
 #define PROTECT_POWER           0x04
 #define PROTECT_VOLTAGE_SAVE    0x08
-//#define PROTECT_CURRENT_SAVE    0x10
-//#define PROTECT_POWER_SAVE      0x20
 
 static uint8_t  pkt_out[2] = {0x58, 0xAA};
 static uint8_t  pkt_in[PKT_SIZE] = {0};
@@ -290,8 +288,8 @@ void monitoring_handler() {
                     protect_on |= PROTECT_POWER;
                 }
 
-                if ((voltage_prot < relay_settings.voltage_min && voltage < relay_settings.voltage_min) ||
-                        (voltage_prot > relay_settings.voltage_max && voltage > relay_settings.voltage_max)) {
+                if ((relay_settings.voltage_min && voltage_prot < relay_settings.voltage_min && voltage < relay_settings.voltage_min) ||
+                    (relay_settings.voltage_max && voltage_prot > relay_settings.voltage_max && voltage > relay_settings.voltage_max)) {
 //                    printf("voltage_prot: %d, voltage: %d\r\n", voltage_prot, voltage);
                     protect_on |= PROTECT_VOLTAGE | PROTECT_VOLTAGE_SAVE;
                 }

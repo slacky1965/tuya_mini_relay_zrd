@@ -9,7 +9,8 @@
 #define AUTORESTART_ON          0x01
 #define TIME_RELOAD_MIN         5                   // sec
 #define TIME_RELOAD_MAX         60                  // sec
-#define VOLTAGE_MID             22000               // 220V
+#define VOLTAGE_MIN             0                   // 0V
+#define VOLTAGE_MAX             30000               // 300V
 
 #define DEFAULT_CURRENT_MAX     1600                // 16A
 #define DEFAULT_POWER_MAX       3600                // 3600W
