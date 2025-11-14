@@ -3,8 +3,8 @@
 
 /* for electrical measurement cluster */
 
-#define ZCL_ATTRID_CUSTOM_VOLTAGE_MIN       0xF000
-#define ZCL_ATTRID_CUSTOM_VOLTAGE_MAX       0xF001
+//#define ZCL_ATTRID_CUSTOM_VOLTAGE_MIN       0xF000
+//#define ZCL_ATTRID_CUSTOM_VOLTAGE_MAX       0xF001
 #define ZCL_ATTRID_CUSTOM_CURRENT_MAX       0xF002
 #define ZCL_ATTRID_CUSTOM_POWER_MAX         0xF003
 #define ZCL_ATTRID_CUSTOM_TIME_RELOAD       0xF004

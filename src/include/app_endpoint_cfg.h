@@ -101,8 +101,8 @@ typedef struct {
     int16_t  power;
     int16_t  power_max;
     uint16_t voltage;
-    uint16_t voltage_min;
-    uint16_t voltage_max;
+    int16_t  voltage_min;
+    int16_t  voltage_max;
     uint16_t time_reload;
     uint8_t  protect_control;
     uint8_t  auto_restart;
