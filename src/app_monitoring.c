@@ -15,8 +15,8 @@
 
 static uint8_t  pkt_out[2] = {0x58, 0xAA};
 static uint8_t  pkt_in[PKT_SIZE] = {0};
-static uint16_t current, current_prot, voltage, voltage_prot, freq;
-static int16_t  power, power_prot;
+static uint16_t current, current_prot[4], voltage, voltage_prot[4], freq;
+static int16_t  power, power_prot[4];
 static uint64_t cur_sum_delivered;
 static uint32_t new_energy, old_energy = 0;
 static uint8_t  default_energy_cons = false;
@@ -256,9 +256,11 @@ void monitoring_handler() {
 #endif
                     first_start = false;
                     old_energy = new_energy;
-                    current_prot = current;
-                    power_prot = power;
-                    voltage_prot = voltage;
+                    for (uint8_t i = 0; i < 4; i++) {
+                        current_prot[i] = current;
+                        power_prot[i] = power;
+                        voltage_prot[i] = voltage;
+                    }
                     return;
                 }
 
@@ -278,25 +280,44 @@ void monitoring_handler() {
 
                 protect_on &= PROTECT_VOLTAGE_SAVE;
 
-                if (relay_settings.current_max && current_prot > relay_settings.current_max && current > relay_settings.current_max) {
+                if (relay_settings.current_max &&
+                        current_prot[0] > relay_settings.current_max && current_prot[1] > relay_settings.current_max &&
+                        current_prot[2] > relay_settings.current_max && current_prot[3] > relay_settings.current_max &&
+                        current > relay_settings.current_max) {
 //                    printf("current\r\n");
                     protect_on |= PROTECT_CURRENT;
                 }
 
-                if (relay_settings.power_max && power_prot > relay_settings.power_max && power > relay_settings.power_max) {
+                if (relay_settings.power_max &&
+                        power_prot[0] > relay_settings.power_max && power_prot[1] > relay_settings.power_max &&
+                        power_prot[2] > relay_settings.power_max && power_prot[3] > relay_settings.power_max &&
+                        power > relay_settings.power_max) {
 //                    printf("power: %d, power_max: %d\r\n", power, relay_settings.power_max);
                     protect_on |= PROTECT_POWER;
                 }
 
-                if ((relay_settings.voltage_min && voltage_prot < relay_settings.voltage_min && voltage < relay_settings.voltage_min) ||
-                    (relay_settings.voltage_max && voltage_prot > relay_settings.voltage_max && voltage > relay_settings.voltage_max)) {
+                if ((relay_settings.voltage_min &&
+                        voltage_prot[0] < relay_settings.voltage_min && voltage_prot[1] < relay_settings.voltage_min &&
+                        voltage_prot[2] < relay_settings.voltage_min && voltage_prot[3] < relay_settings.voltage_min &&
+                        voltage < relay_settings.voltage_min) || (relay_settings.voltage_max &&
+                        voltage_prot[0] > relay_settings.voltage_max && voltage_prot[1] > relay_settings.voltage_max &&
+                        voltage_prot[2] > relay_settings.voltage_max && voltage_prot[3] > relay_settings.voltage_max &&
+                        voltage > relay_settings.voltage_max)) {
 //                    printf("voltage_prot: %d, voltage: %d\r\n", voltage_prot, voltage);
                     protect_on |= PROTECT_VOLTAGE | PROTECT_VOLTAGE_SAVE;
                 }
 
-                current_prot = current;
-                power_prot = power;
-                voltage_prot = voltage;
+                for(uint8_t i = 0; i < 4; i++) {
+                    if (i == 3) {
+                        current_prot[i] = current;
+                        power_prot[i] = power;
+                        voltage_prot[i] = voltage;
+                    } else {
+                        current_prot[i] = current_prot[i+1];
+                        power_prot[i] = power_prot[i+1];
+                        voltage_prot[i] = voltage_prot[i+1];
+                    }
+                }
 
                 if (relay_settings.protect_control && protect_on && relay_settings.status_onoff[i]) {
                     if (!timerAutoRestartEvt) {
