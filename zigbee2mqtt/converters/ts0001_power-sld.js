@@ -8,8 +8,6 @@ import * as logger from 'zigbee-herdsman-converters/lib/logger';
 const e = exposes_1.presets;
 const ea = exposes_1.access;
 
-const attrRelayVoltageMin = 0xf000;
-const attrRelayVoltageMax = 0xf001;
 const attrRelayCurrentMax = 0xf002;
 const attrRelayPowerMax = 0xf003;
 const attrRelayTimeReload = 0xf004;
@@ -138,16 +136,18 @@ export default {
           commandsResponse: {},
         }),
         energyResetExtend.energyReset(),
-        m.enumLookup({
+        m.binary({
             name: "protect_control",
-            lookup: {off: 0, on: 1},
+            valueOn: ["ON", 1],
+            valueOff: ["OFF", 0],
             cluster: "haElectricalMeasurement",
             attribute: {ID: attrRelayProtectCtrl, type: 0x10},
             description: "Protection control enable/disable",
         }),
-        m.enumLookup({
+        m.binary({
             name: "automatic_restart",
-            lookup: {off: 0, on: 1},
+            valueOn: ["ON", 1],
+            valueOff: ["OFF", 0],
             cluster: "haElectricalMeasurement",
             attribute: {ID: attrRelayAutoRestart, type: 0x10},
             description: "Automatic restart enable/disable for voltage only",
@@ -156,19 +156,19 @@ export default {
             name: "voltage_min",
             unit: "V",
             cluster: "haElectricalMeasurement",
-            attribute: {ID: attrRelayVoltageMin, type: 0x21},
+            attribute: "rmsExtremeUnderVoltage",
             description: "Minimum voltage value",
             valueMin: 0,
-            valueMax: 219,
+            valueMax: 300,
             scale: 100,
         }),
         m.numeric({
             name: "voltage_max",
             unit: "V",
             cluster: "haElectricalMeasurement",
-            attribute: {ID: attrRelayVoltageMax, type: 0x21},
+            attribute: "rmsExtremeOverVoltage",
             description: "Maximum voltage value",
-            valueMin: 221,
+            valueMin: 0,
             valueMax: 300,
             scale: 100,
         }),
