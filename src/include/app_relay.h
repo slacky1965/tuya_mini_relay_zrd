@@ -28,8 +28,8 @@ typedef struct __attribute__((packed)) {
     uint8_t  switch_decoupled[AMT_RELAY];
     uint16_t current_max;
     int16_t  power_max;
-    uint16_t voltage_min;
-    uint16_t voltage_max;
+    int16_t  voltage_min;
+    int16_t  voltage_max;
     uint16_t time_reload;
     uint8_t  protect_control;
     uint8_t  auto_restart;
